@@ -44,17 +44,48 @@ function log_(str){
         console.log(str)
 }
 
+function updateTicketAsUsed(ticket){
+    
+     
+    var sql = "UPDATE 3access.3a_estoque_utilizavel \
+                SET 3access.3a_estoque_utilizavel.utilizado = 1 \
+                WHERE id_estoque_utilizavel = " + ticket + " LIMIT 1;"
 
-function dataAtualFormatada(){
-    var data = new Date();
-    var dia = data.getDate();
-    if (dia.toString().length == 1)
-      dia = "0"+dia;
-    var mes = data.getMonth()+1;
-    if (mes.toString().length == 1)
-      mes = "0"+mes;
-    var ano = data.getFullYear();  
-    return dia+"/"+mes+"/"+ano;
+   log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;  
+        
+        return true
+    });
+}
+
+
+
+function useTicket_(req){
+    
+    var idTotem = req.body.id
+    var idAreaAcesso = req.body.idAreaAcesso
+    var ticket = req.body.ticket
+
+    log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idAreaAcesso)
+            
+    var sql = "INSERT INTO 3access.3a_log_utilizacao \
+            (3access.3a_log_utilizacao.fk_id_estoque_utilizavel, \
+             3access.3a_log_utilizacao.fk_id_ponto_acesso, \
+             3access.3a_log_utilizacao.fk_id_area_acesso, \
+             3access.3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
+            VALUES (" + ticket + "," + idTotem + "," + idAreaAcesso + ", 1, NOW());"
+
+   log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;          
+        
+        let removeStock = updateTicketAsUsed(ticket)
+
+        return removeStock
+    });
 }
 
 app.post('/getAreas', function(req, res) {
@@ -103,6 +134,26 @@ app.post('/getAreaCounter', function(req, res) {
     });
 });
 
+app.post('/incrementAreaCounter', function(req, res) {
+
+    var idTotem = req.body.id
+    var idArea = req.body.idArea
+
+    log_('Totem: '+ idTotem + ' - Incrementando contador da area:', idArea)
+            
+    var sql = "UPDATE \
+    3access.3a_area_acesso \
+    SET 3access.3a_area_acesso.lotacao_area_acesso = 3access.3a_area_acesso.lotacao_area_acesso + 1 \
+    WHERE 3access.3a_area_acesso.id_area_acesso = " + idArea + ";"
+
+   log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;           
+        res.json({"success": result}); 
+    });
+});
+
 app.post('/decrementAreaCounter', function(req, res) {
 
     var idTotem = req.body.id
@@ -116,6 +167,27 @@ app.post('/decrementAreaCounter', function(req, res) {
     WHERE 3access.3a_area_acesso.id_area_acesso = " + idArea + ";"
 
    // log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;           
+        res.json({"success": result}); 
+    });
+});
+
+app.post('/checkTicketIsSold', function(req, res) {
+
+    var idTotem = req.body.id
+    var ticket = req.body.ticket
+
+    log_('Totem: '+ idTotem + ' - Verificando ticket vendido:', ticket)
+            
+    var sql = "SELECT 3access.3a_estoque_utilizavel.id_estoque_utilizavel,\
+        3access.3a_log_vendas.data_log_venda \
+        FROM 3access.3a_estoque_utilizavel \
+    LEFT JOIN 3access.3a_log_vendas ON 3access.3a_log_vendas.fk_id_estoque_utilizavel = 3access.3a_estoque_utilizavel.id_estoque_utilizavel \
+    WHERE 3access.3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
+
+   log_(sql)
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;           
@@ -157,9 +229,11 @@ app.post('/checkTicketContinue', function(req, res) {
         3access.3a_estoque_utilizavel.id_estoque_utilizavel,\
         3access.3a_estoque_utilizavel.utilizado,\
         3access.3a_produto.nome_produto,\
+        3access.3a_tipo_produto.nome_tipo_produto, \
         3access.3a_validade.*	\
         FROM 3access.3a_log_vendas \
     INNER JOIN 3access.3a_produto ON 3access.3a_produto.id_produto = 3access.3a_log_vendas.fk_id_produto \
+    INNER JOIN 3access.3a_tipo_produto ON 3access.3a_tipo_produto.id_tipo_produto = 3access.3a_produto.fk_id_tipo_produto \
     INNER JOIN 3access.3a_estoque_utilizavel ON 3access.3a_estoque_utilizavel.id_estoque_utilizavel = 3access.3a_log_vendas.fk_id_estoque_utilizavel \
     INNER JOIN 3access.3a_validade ON 3access.3a_validade.id_validade = 3access.3a_log_vendas.fk_id_validade \
     WHERE 3access.3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
@@ -174,28 +248,9 @@ app.post('/checkTicketContinue', function(req, res) {
 
 app.post('/useTicket', function(req, res) {
 
-    var idTotem = req.body.id
-    var ticket = req.body.ticket
-
-    log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
-            
-    var sql = "SELECT 3access.3a_log_vendas.data_log_venda,\
-        3access.3a_estoque_utilizavel.id_estoque_utilizavel,\
-        3access.3a_estoque_utilizavel.utilizado,\
-        3access.3a_produto.nome_produto,\
-        3access.3a_validade.*	\
-        FROM 3access.3a_log_vendas \
-    INNER JOIN 3access.3a_produto ON 3access.3a_produto.id_produto = 3access.3a_log_vendas.fk_id_produto \
-    INNER JOIN 3access.3a_estoque_utilizavel ON 3access.3a_estoque_utilizavel.id_estoque_utilizavel = 3access.3a_log_vendas.fk_id_estoque_utilizavel \
-    INNER JOIN 3access.3a_validade ON 3access.3a_validade.id_validade = 3access.3a_log_vendas.fk_id_validade \
-    WHERE 3access.3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
-
-   log_(sql)
-
-    con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
-        res.json({"success": result}); 
-    });
+    let operation = useTicket_(req)            
+    res.json({"success": operation}); 
+    
 });
 
 app.listen(8085);
