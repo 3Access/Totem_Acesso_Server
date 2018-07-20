@@ -124,9 +124,7 @@ app.post('/getAreaCounter', function(req, res) {
     3access.3a_area_acesso.ativo \
     FROM \
     3access.3a_area_acesso \
-    WHERE 3access.3a_area_acesso.id_area_acesso = " + idArea + ";"
-
-    //log_(sql)
+    WHERE 3access.3a_area_acesso.id_area_acesso = " + idArea + ";"    
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;           
