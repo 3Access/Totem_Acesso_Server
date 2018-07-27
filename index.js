@@ -4,9 +4,9 @@ var bodyParser = require('body-parser');
 var logger = require('morgan');
 var methodOverride = require('method-override')
 var cors = require('cors');
-var fs = require("fs");
+//var fs = require("fs");
 var app = express();
-var shell = require('shelljs');
+//var shell = require('shelljs');
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -14,7 +14,7 @@ app.use(methodOverride());
 app.use(cors());
 
 
-var admin = require("firebase-admin");
+/*var admin = require("firebase-admin");
 var serviceAccount = require('./serviceAccountKey.json');
 var firebase = require('firebase-admin');
 var client = 'uifhsh34ud2'        
@@ -22,9 +22,9 @@ var client = 'uifhsh34ud2'
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://totem-beba5.firebaseio.com"
-});
+});*/
 
-var shell = require('shelljs');
+//var shell = require('shelljs');
 
 var con = mysql.createConnection({
     host: "10.8.0.50",
@@ -35,8 +35,7 @@ var con = mysql.createConnection({
  con.connect(function(err) {
     if (err) throw err;
     
-	log_("Database conectado!")		
-    
+	log_("Database conectado!")		    
 	log_("Aguardando conexões ...")	
 });
 
@@ -45,8 +44,7 @@ function log_(str){
 }
 
 function updateTicketAsUsed(ticket){
-    
-     
+         
     var sql = "UPDATE 3access.3a_estoque_utilizavel \
                 SET 3access.3a_estoque_utilizavel.utilizado = 1 \
                 WHERE id_estoque_utilizavel = " + ticket + " LIMIT 1;"
@@ -59,8 +57,6 @@ function updateTicketAsUsed(ticket){
         return true
     });
 }
-
-
 
 function useTicket_(req){
     
@@ -83,7 +79,6 @@ function useTicket_(req){
         if (err1) throw err1;          
         
         let removeStock = updateTicketAsUsed(ticket)
-
         return removeStock
     });
 }
@@ -101,8 +96,6 @@ app.post('/getAreas', function(req, res) {
     3access.3a_area_acesso.ativo \
     FROM \
     3access.3a_area_acesso";
-
-    //log_(sql)
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;           
@@ -164,8 +157,6 @@ app.post('/decrementAreaCounter', function(req, res) {
     SET 3access.3a_area_acesso.lotacao_area_acesso = 3access.3a_area_acesso.lotacao_area_acesso - 1 \
     WHERE 3access.3a_area_acesso.id_area_acesso = " + idArea + ";"
 
-   // log_(sql)
-
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;           
         res.json({"success": result}); 
@@ -178,19 +169,20 @@ app.post('/checkTicketIsSold', function(req, res) {
     var ticket = req.body.ticket
 
     log_('Totem: '+ idTotem + ' - Verificando ticket vendido:', ticket)
-            
+    
     var sql = "SELECT 3access.3a_estoque_utilizavel.id_estoque_utilizavel,\
         3access.3a_log_vendas.data_log_venda \
         FROM 3access.3a_estoque_utilizavel \
     LEFT JOIN 3access.3a_log_vendas ON 3access.3a_log_vendas.fk_id_estoque_utilizavel = 3access.3a_estoque_utilizavel.id_estoque_utilizavel \
     WHERE 3access.3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
 
-   log_(sql)
+    log_(sql)
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
-        res.json({"success": result}); 
+        if (err1) throw err1;                   
+        res.json({"success": result});     
     });
+    
 });
 
 app.post('/checkTicket', function(req, res) {
@@ -247,8 +239,29 @@ app.post('/checkTicketContinue', function(req, res) {
 app.post('/useTicket', function(req, res) {
 
     let operation = useTicket_(req)            
-    res.json({"success": operation}); 
-    
+    res.json({"success": operation});  
+});
+
+app.post('/checkMultipleTickets', function(req, res) {
+
+    var idTotem = req.body.id
+    var ticketStart = req.body.ticketStart
+    var ticketEnd = req.body.ticketEnd
+
+    log_('Totem: '+ idTotem + ' - Verificando vários ticket:', ticketStart, ticketEnd)
+
+    var sql = "SELECT 3access.3a_estoque_utilizavel.id_estoque_utilizavel,\
+        3access.3a_log_vendas.data_log_venda \
+        FROM 3access.3a_estoque_utilizavel \
+    LEFT JOIN 3access.3a_log_vendas ON 3access.3a_log_vendas.fk_id_estoque_utilizavel = 3access.3a_estoque_utilizavel.id_estoque_utilizavel \
+    WHERE 3access.3a_estoque_utilizavel.id_estoque_utilizavel BETWEEN " + ticketStart + " AND "+ ticketEnd + ";"
+
+   log_(sql)   
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;   
+        res.json({"success": result});  
+    });            
 });
 
 app.listen(8085);
