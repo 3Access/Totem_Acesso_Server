@@ -161,9 +161,9 @@ app.post('/checkTicketAreaAccess', function(req, res) {
     3a_produto.nome_produto,\
     3a_subtipo_produto.nome_subtipo_produto \
     FROM 3a_estoque_utilizavel \
-    INNER JOIN 3a_log_venda ON 3a_log_venda.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
-    INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_log_venda.fk_id_produto \
-    INNER JOIN 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_venda.fk_id_subtipo_produto \
+    INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+    INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_log_vendas.fk_id_produto \
+    INNER JOIN 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
     INNER JOIN 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
     WHERE id_estoque_utilizavel = " + ticket + "\
     AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
