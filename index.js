@@ -52,6 +52,8 @@ function startGpios(){
 }
 
 function watchGpios(){
+    log_("Configurando GPIOs")
+
     fs.watch('/sys/class/gpio/gpio2/value', { persistent: true }, function (event_, fileName) {
         log_('gpio-changed', filename, event_)
         io.emit('gpio-changed', {gpio: '2', event: event_});   
@@ -66,6 +68,8 @@ function watchGpios(){
         log_('gpio-changed', filename, event_)
         io.emit('gpio-changed', {gpio: '4', event: event_});   
     });
+
+    log_("GPIOs configuradas")
 }
 
 function updateTicketAsUsed(ticket){
