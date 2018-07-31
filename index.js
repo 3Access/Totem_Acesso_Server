@@ -1,17 +1,21 @@
-var mysql = require('mysql');
-var express = require('express');
-var bodyParser = require('body-parser');
-var logger = require('morgan');
-var methodOverride = require('method-override')
-var cors = require('cors');
-var app = express();
+let mysql = require('mysql');
+let express =  require('express');
+let app = express();
+let http = require('http').Server(app);
+let io = require('socket.io')(http);
+let bodyParser = require('body-parser');
+let logger = require('morgan');
+let methodOverride = require('method-override')
+let cors = require('cors');
+let shell = require('shelljs');
+var fs = require("fs");
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(methodOverride());
 app.use(cors());
 
-var con = mysql.createConnection({
+let con = mysql.createConnection({
     host: "10.8.0.50",
     user: "root",
     password: "Mudaragora00",
@@ -21,37 +25,72 @@ var con = mysql.createConnection({
  con.connect(function(err) {
     if (err) throw err;
 	log_("Database conectado!")		    
-	log_("Aguardando conexões ...")	
+    log_("Aguardando conexões ...")	
+    startGpios()
 });
 
 function log_(str){
     console.log(str)
 }
 
+function startGpios(){
+    log_("Iniciando GPIOs...")	
+
+    shell.exec('echo "2" > /sys/class/gpio/unexport', {silent:true});						
+    shell.exec('echo "2" > /sys/class/gpio/export', {silent:true});										        
+    shell.exec('echo "in" > /sys/class/gpio/gpio2/direction', {silent:true});	    
+
+    shell.exec('echo "3" > /sys/class/gpio/unexport', {silent:true});						
+    shell.exec('echo "3" > /sys/class/gpio/export', {silent:true});										        
+    shell.exec('echo "in" > /sys/class/gpio/gpio3/direction', {silent:true});	    
+
+    shell.exec('echo "4" > /sys/class/gpio/unexport', {silent:true});						
+    shell.exec('echo "4" > /sys/class/gpio/export', {silent:true});										        
+    shell.exec('echo "in" > /sys/class/gpio/gpio4/direction', {silent:true});	    
+
+    watchGpios()
+}
+
+function watchGpios(){
+    fs.watch('/sys/class/gpio/gpio2/value', { persistent: true }, function (event_, fileName) {
+        log_('gpio-changed', filename, event_)
+        io.emit('gpio-changed', {gpio: '2', event: event_});   
+    });
+
+    fs.watch('/sys/class/gpio/gpio3/value', { persistent: true }, function (event_, fileName) {
+        log_('gpio-changed', filename, event_)
+        io.emit('gpio-changed', {gpio: '3', event: event_});   
+    });
+
+    fs.watch('/sys/class/gpio/gpio4/value', { persistent: true }, function (event_, fileName) {
+        log_('gpio-changed', filename, event_)
+        io.emit('gpio-changed', {gpio: '4', event: event_});   
+    });
+}
+
 function updateTicketAsUsed(ticket){
          
-    var sql = "UPDATE 3a_estoque_utilizavel \
+    let sql = "UPDATE 3a_estoque_utilizavel \
                 SET 3a_estoque_utilizavel.utilizado = 1 \
                 WHERE id_estoque_utilizavel = " + ticket + " LIMIT 1;"
 
    log_(sql)
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;  
-        
+        if (err1) throw err1;          
         return true
     });
 }
 
 function useTicket_(req){
     
-    var idTotem = req.body.id
-    var idAreaAcesso = req.body.idAreaAcesso
-    var ticket = req.body.ticket
+    let idTotem = req.body.id
+    let idAreaAcesso = req.body.idAreaAcesso
+    let ticket = req.body.ticket
 
     log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idAreaAcesso)
             
-    var sql = "INSERT INTO 3a_log_utilizacao \
+    let sql = "INSERT INTO 3a_log_utilizacao \
             (3a_log_utilizacao.fk_id_estoque_utilizavel, \
              3a_log_utilizacao.fk_id_ponto_acesso, \
              3a_log_utilizacao.fk_id_area_acesso, \
@@ -70,11 +109,11 @@ function useTicket_(req){
 
 app.post('/getAreas', function(req, res) {
 
-    var idTotem = req.body.id
+    let idTotem = req.body.id
 
     log_('Totem: '+ idTotem + ' - Verificando todas as areas:')
             
-    var sql = "SELECT \
+    let sql = "SELECT \
     3a_area_acesso.id_area_acesso,\
     3a_area_acesso.nome_area_acesso,\
     3a_area_acesso.lotacao_area_acesso,\
@@ -90,12 +129,12 @@ app.post('/getAreas', function(req, res) {
 
 app.post('/getAreaCounter', function(req, res) {
 
-    var idTotem = req.body.id
-    var idArea = req.body.idArea    
+    let idTotem = req.body.id
+    let idArea = req.body.idArea    
 
     log_('Totem: '+ idTotem + ' - Verificando contador da area:', idArea)
             
-    var sql = "SELECT \
+    let sql = "SELECT \
     3a_area_acesso.id_area_acesso,\
     3a_area_acesso.nome_area_acesso,\
     3a_area_acesso.lotacao_area_acesso,\
@@ -112,12 +151,12 @@ app.post('/getAreaCounter', function(req, res) {
 
 app.post('/incrementAreaCounter', function(req, res) {
 
-    var idTotem = req.body.id
-    var idArea = req.body.idArea
+    let idTotem = req.body.id
+    let idArea = req.body.idArea
 
     log_('Totem: '+ idTotem + ' - Incrementando contador da area:', idArea)
             
-    var sql = "UPDATE \
+    let sql = "UPDATE \
     3a_area_acesso \
     SET 3a_area_acesso.lotacao_area_acesso = 3a_area_acesso.lotacao_area_acesso + 1 \
     WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"
@@ -132,12 +171,12 @@ app.post('/incrementAreaCounter', function(req, res) {
 
 app.post('/decrementAreaCounter', function(req, res) {
 
-    var idTotem = req.body.id
-    var idArea = req.body.idArea
+    let idTotem = req.body.id
+    let idArea = req.body.idArea
 
     log_('Totem: '+ idTotem + ' - Decrementando contador da area:', idArea)
             
-    var sql = "UPDATE \
+    let sql = "UPDATE \
     3a_area_acesso \
     SET 3a_area_acesso.lotacao_area_acesso = 3a_area_acesso.lotacao_area_acesso - 1 \
     WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"
@@ -178,12 +217,12 @@ app.post('/checkTicketAreaAccess', function(req, res) {
 
 app.post('/checkTicketIsSold', function(req, res) {
 
-    var idTotem = req.body.id
-    var ticket = req.body.ticket
+    let idTotem = req.body.id
+    let ticket = req.body.ticket
 
     log_('Totem: '+ idTotem + ' - Verificando ticket vendido:', ticket)
     
-    var sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel,\
+    let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel,\
         3a_log_vendas.data_log_venda \
         FROM 3a_estoque_utilizavel \
     LEFT JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
@@ -199,12 +238,12 @@ app.post('/checkTicketIsSold', function(req, res) {
 
 app.post('/checkTicket', function(req, res) {
 
-    var idTotem = req.body.id
-    var ticket = req.body.ticket
+    let idTotem = req.body.id
+    let ticket = req.body.ticket
 
     log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
             
-    var sql = "SELECT 3a_log_utilizacao.data_log_utilizacao,\
+    let sql = "SELECT 3a_log_utilizacao.data_log_utilizacao,\
 	    3a_estoque_utilizavel.id_estoque_utilizavel,\
 	    3a_ponto_acesso.nome_ponto_acesso \
         FROM 3a_log_utilizacao \
@@ -222,12 +261,12 @@ app.post('/checkTicket', function(req, res) {
 
 app.post('/checkTicketContinue', function(req, res) {
 
-    var idTotem = req.body.id
-    var ticket = req.body.ticket
+    let idTotem = req.body.id
+    let ticket = req.body.ticket
 
     log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
             
-    var sql = "SELECT 3a_log_vendas.data_log_venda,\
+    let sql = "SELECT 3a_log_vendas.data_log_venda,\
         3a_estoque_utilizavel.id_estoque_utilizavel,\
         3a_estoque_utilizavel.utilizado,\
         3a_produto.nome_produto,\
@@ -256,13 +295,13 @@ app.post('/useTicket', function(req, res) {
 
 app.post('/checkMultipleTickets', function(req, res) {
 
-    var idTotem = req.body.id
-    var ticketStart = req.body.ticketStart
-    var ticketEnd = req.body.ticketEnd
+    let idTotem = req.body.id
+    let ticketStart = req.body.ticketStart
+    let ticketEnd = req.body.ticketEnd
 
     log_('Totem: '+ idTotem + ' - Verificando vários ticket:', ticketStart, ticketEnd)
 
-    var sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel,\
+    let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel,\
         3a_log_vendas.data_log_venda \
         FROM 3a_estoque_utilizavel \
     LEFT JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
