@@ -16,7 +16,8 @@ app.use(methodOverride());
 app.use(cors());
 
 let con = mysql.createConnection({
-    host: "10.8.0.50",
+    //host: "10.8.0.50",
+    host: "10.0.2.180",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
@@ -55,17 +56,17 @@ function watchGpios(){
     log_("Configurando GPIOs")
 
     fs.watch('/sys/class/gpio/gpio2/value', { persistent: true }, function (event_, fileName) {
-        log_('gpio-changed', fileName, event_)
+        console.log('gpio-changed', fileName, event_)
         io.emit('gpio-changed', {gpio: '2', event: event_});   
     });
 
     fs.watch('/sys/class/gpio/gpio3/value', { persistent: true }, function (event_, fileName) {
-        log_('gpio-changed', fileName, event_)
+        console.log('gpio-changed', fileName, event_)
         io.emit('gpio-changed', {gpio: '3', event: event_});   
     });
 
     fs.watch('/sys/class/gpio/gpio4/value', { persistent: true }, function (event_, fileName) {
-        log_('gpio-changed', fileName, event_)
+        console.log('gpio-changed', fileName, event_)
         io.emit('gpio-changed', {gpio: '4', event: event_});   
     });
 
