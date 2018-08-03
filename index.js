@@ -16,8 +16,8 @@ app.use(methodOverride());
 app.use(cors());
 
 let con = mysql.createConnection({
-    //host: "10.8.0.50",
-    host: "10.0.2.180",
+    host: "10.8.0.50",
+    //host: "10.0.2.180",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
@@ -27,7 +27,7 @@ let con = mysql.createConnection({
     if (err) throw err;
 	log_("Database conectado!")		    
     log_("Aguardando conexões ...")	
-    startGpios()
+    //startGpios()
 });
 
 function log_(str){
