@@ -165,6 +165,30 @@ app.post('/getAreaInfo', function(req, res) {
     });
 });
 
+app.post('/getAreaInfo', function(req, res) {
+
+    let idTotem = req.body.id
+    let idArea_ = req.body.idArea
+
+    log_('Totem: '+ idTotem + ' - Verificando informações da area: ' + idArea_)
+            
+    let sql = "SELECT \
+    3a_area_acesso.id_area_acesso,\
+    3a_area_acesso.nome_area_acesso,\
+    3a_area_acesso.lotacao_area_acesso,\
+    3a_area_acesso.ativo \
+    FROM \
+    3a_area_acesso \
+    WHERE 3a_area_acesso.id_area_acesso = " + idArea_ + ";";
+
+    log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;           
+        res.json({"success": result}); 
+    });
+});
+
 app.post('/getAreaCounter', function(req, res) {
 
     let idTotem = req.body.id
