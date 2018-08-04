@@ -9,6 +9,8 @@ let methodOverride = require('method-override')
 let cors = require('cors');
 let shell = require('shelljs');
 var fs = require("fs");
+var os = require('os');
+var ifaces = os.networkInterfaces();
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -116,20 +118,27 @@ app.post('/getAreas', function(req, res) {
 
     let idTotem = req.body.id
 
-    log_('Totem: '+ idTotem + ' - Verificando todas as areas:')
-            
-    let sql = "SELECT \
-    3a_area_acesso.id_area_acesso,\
-    3a_area_acesso.nome_area_acesso,\
-    3a_area_acesso.lotacao_area_acesso,\
-    3a_area_acesso.ativo \
-    FROM \
-    3a_area_acesso";
+    if(idTotem == 0)
+        res.json({"success": false}); 
 
-    con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
-        res.json({"success": result}); 
-    });
+    else {
+
+        log_('Totem: '+ idTotem + ' - Verificando todas as areas:')
+            
+        let sql = "SELECT \
+        3a_area_acesso.id_area_acesso,\
+        3a_area_acesso.nome_area_acesso,\
+        3a_area_acesso.lotacao_area_acesso,\
+        3a_area_acesso.ativo \
+        FROM \
+        3a_area_acesso";
+
+        con.query(sql, function (err1, result) {        
+            if (err1) throw err1;           
+            res.json({"success": result}); 
+        });
+
+    }    
 });
 
 app.post('/getAreaInfo', function(req, res) {
@@ -342,6 +351,29 @@ app.post('/checkMultipleTickets', function(req, res) {
         if (err1) throw err1;   
         res.json({"success": result});  
     });            
+});
+
+app.post('/getTotemInfo', function(req, res) {    
+    
+    Object.keys(ifaces).forEach(function (ifname) {
+      
+        ifaces[ifname].forEach(function (iface) {
+          if ('IPv4' !== iface.family || iface.internal !== false) {
+            return;
+          }
+      
+          console.log(ifname, iface.address);
+          let address = iface.address
+
+          let sql = "SELECT * FROM 3a_ponto_acesso WHERE ip_ponto_acesso = '" + address + "';"
+          log_(sql)   
+ 
+          con.query(sql, function (err1, result) {        
+             if (err1) throw err1;   
+             res.json({"success": result});  
+           });          
+        });
+      });    
 });
 
 http.listen(8085);
