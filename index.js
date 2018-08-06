@@ -306,11 +306,13 @@ app.post('/checkTicket', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
             
     let sql = "SELECT 3a_log_utilizacao.data_log_utilizacao,\
-	    3a_estoque_utilizavel.id_estoque_utilizavel,\
+        3a_estoque_utilizavel.id_estoque_utilizavel,\
+        3a_porta_acesso.*,\
 	    3a_ponto_acesso.nome_ponto_acesso \
         FROM 3a_log_utilizacao \
     INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
     INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_utilizacao.fk_id_estoque_utilizavel \
+    INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
     WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
 
    log_(sql)
@@ -333,12 +335,15 @@ app.post('/checkTicketContinue', function(req, res) {
         3a_estoque_utilizavel.utilizado,\
         3a_produto.nome_produto,\
         3a_tipo_produto.nome_tipo_produto, \
-        3a_validade.*	\
+        3a_porta_acesso.*,\
+        3a_validade.* \
         FROM 3a_log_vendas \
     INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_log_vendas.fk_id_produto \
     INNER JOIN 3a_tipo_produto ON 3a_tipo_produto.id_tipo_produto = 3a_produto.fk_id_tipo_produto \
     INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_vendas.fk_id_estoque_utilizavel \
     INNER JOIN 3a_validade ON 3a_validade.id_validade = 3a_log_vendas.fk_id_validade \
+    INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_log_vendas.fk_id_ponto_acesso \
+    INNER JOIN 3a_area_acesso ON 3a_area_acesso.id_area_acesso = 3a_porta_acesso.fk_id_area_acesso \
     WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
 
    log_(sql)
@@ -379,25 +384,35 @@ app.post('/checkMultipleTickets', function(req, res) {
 
 app.post('/getTotemInfo', function(req, res) {    
     
+    let sql;
+
     Object.keys(ifaces).forEach(function (ifname) {
       
         ifaces[ifname].forEach(function (iface) {
+          
           if ('IPv4' !== iface.family || iface.internal !== false) {
             return;
           }
-      
-          console.log(ifname, iface.address);
-          let address = iface.address
 
-          let sql = "SELECT * FROM 3a_ponto_acesso WHERE ip_ponto_acesso = '" + address + "';"
-          log_(sql)   
- 
-          con.query(sql, function (err1, result) {        
-             if (err1) throw err1;   
-             res.json({"success": result});  
-           });          
+          address = iface.address
+
+          if(address)
+            sql = "SELECT 3a_ponto_acesso.*,\
+                    3a_porta_acesso.*,\
+                    3a_area_acesso.* \
+                FROM 3a_ponto_acesso \
+                INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
+                INNER JOIN 3a_area_acesso ON 3a_area_acesso.id_area_acesso = 3a_porta_acesso.fk_id_area_acesso \
+                WHERE ip_ponto_acesso = '" + address + "';"                                                   
         });
-      });    
+      }); 
+      
+    log_(sql)   
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;   
+        res.json({"success": result});               
+    }); 
 });
 
 http.listen(8085);
