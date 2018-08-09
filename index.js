@@ -91,8 +91,6 @@ function updateTicketAsUsed(ticket){
 
 function useTicket_(req){
     
-    console.log(req.body)
-    
     let idTotem = req.body.id
     let idArea = req.body.idArea
     let ticket = req.body.ticket
@@ -104,15 +102,30 @@ function useTicket_(req){
              3a_log_utilizacao.fk_id_ponto_acesso, \
              3a_log_utilizacao.fk_id_area_acesso, \
              3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
-            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());"
+            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
 
    log_(sql)
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;          
         
-        let removeStock = updateTicketAsUsed(ticket)
-        return removeStock
+        updateTicketAsUsed(ticket)        
+        return result
+    });
+}
+
+function getTicketInfo(ticket){        
+
+    let sql = "SELECT 3a_produto.nome_produto FROM 3a_log_vendas \
+    INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_log_vendas.fk_id_produto \
+    INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_vendas.fk_id_estoque_utilizavel \
+    WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
+
+    log_(sql)
+
+    con.query(sql, function (err1, result) {  
+        if (err1) throw err1;                          
+        return result
     });
 }
 
@@ -374,10 +387,13 @@ app.post('/checkTicketUsed', function(req, res) {
     let sql = "SELECT 3a_log_utilizacao.data_log_utilizacao,\
         3a_estoque_utilizavel.id_estoque_utilizavel,\
         3a_porta_acesso.*,\
+        3a_tipo_produto.*,\
 	    3a_ponto_acesso.nome_ponto_acesso \
         FROM 3a_log_utilizacao \
     INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
     INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_utilizacao.fk_id_estoque_utilizavel \
+    INNER join 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
+    INNER JOIN 3a_tipo_produto ON 3a_tipo_produto.id_tipo_produto = 3a_produto.fk_id_tipo_produto \
     INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
     WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
 
@@ -385,7 +401,7 @@ app.post('/checkTicketUsed', function(req, res) {
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;           
-        res.json({"success": result}); 
+        res.json({"success": result, "data": req.body}); 
     });
 });
 
@@ -393,7 +409,7 @@ app.post('/checkTicketUsed', function(req, res) {
 
 app.post('/useTicket', function(req, res) {
 
-    let operation = useTicket_(req)            
+    let operation = useTicket_(req)       
     res.json({"success": operation});  
 });
 
