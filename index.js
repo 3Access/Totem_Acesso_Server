@@ -357,6 +357,33 @@ app.post('/checkTicket', function(req, res) {
     });
 });
 
+app.post('/checkTicketQuick', function(req, res) {
+
+    let idTotem = req.body.id    
+    let ticket = req.body.ticket
+
+    log_('Totem: '+ idTotem + ' - Verificando ticket rápido:', ticket)
+            
+    let sql = "SELECT * \
+        FROM  3a_estoque_utilizavel \
+    INNER join 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
+    INNER join 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_produto.fk_id_subtipo_produto \
+    INNER join 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
+    INNER JOIN 3a_area_acesso ON 3a_area_acesso.id_area_acesso = 3a_subtipo_area_autorizada.fk_id_area_acesso \
+    INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_area_acesso = 3a_area_acesso.id_area_acesso \
+    INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_porta_acesso.fk_id_ponto_acesso \
+    INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+    INNER JOIN 3a_validade ON 3a_validade.id_validade = 3a_log_vendas.fk_id_validade \
+    WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
+
+   log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;           
+        res.json({"success": result}); 
+    });
+});
+
 app.post('/checkTicketContinue', function(req, res) {
 
     let idTotem = req.body.id    
