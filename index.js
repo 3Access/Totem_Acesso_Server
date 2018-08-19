@@ -481,7 +481,7 @@ app.post('/checkMultipleTickets', function(req, res) {
 
     log_('Totem: '+ idTotem + ' - Verificando vários ticket:', ticketStart, ticketEnd)
 
-    let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel,\
+    let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel, verificado AS FALSE\
         3a_log_vendas.data_log_venda \
         FROM 3a_estoque_utilizavel \
     LEFT JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
