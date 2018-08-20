@@ -481,10 +481,13 @@ app.post('/checkMultipleTickets', function(req, res) {
 
     log_('Totem: '+ idTotem + ' - Verificando vários ticket:', ticketStart, ticketEnd)
 
-    let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel, verificado AS FALSE\
+    let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel, false AS MODIFICADO,\
+        3a_ponto_acesso.nome_ponto_acesso,\
         3a_log_vendas.data_log_venda \
         FROM 3a_estoque_utilizavel \
     LEFT JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+    LEFT JOIN 3a_log_utilizacao ON 3a_log_utilizacao.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+    LEFT JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
     WHERE 3a_estoque_utilizavel.id_estoque_utilizavel BETWEEN " + ticketStart + " AND "+ ticketEnd + ";"
 
    log_(sql)   
