@@ -425,6 +425,8 @@ app.post('/checkTicketUsed', function(req, res) {
 
     let idTotem = req.body.id
     let ticket = req.body.ticket
+    let idArea = req.body.idArea
+    let idPorta = req.body.idPorta
 
     log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
             
@@ -436,10 +438,15 @@ app.post('/checkTicketUsed', function(req, res) {
         FROM 3a_log_utilizacao \
     INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
     INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_utilizacao.fk_id_estoque_utilizavel \
-    INNER join 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
+    INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+    INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
+    INNER JOIN 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
     INNER JOIN 3a_tipo_produto ON 3a_tipo_produto.id_tipo_produto = 3a_produto.fk_id_tipo_produto \
+    INNER JOIN 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
     INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
-    WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
+    WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + "\
+    AND 3a_porta_acesso.id_porta_acesso = " + idPorta + "\
+    AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
 
    log_(sql)
 
