@@ -19,16 +19,17 @@ app.use(cors());
 
 let con = mysql.createConnection({
     host: "10.8.0.50",
-    //host: "10.0.2.180",
     user: "root",
     password: "Mudaragora00",
-    database: "zoosp"
+    database: "zoosp",
+    timezone: 'utc'
  });
 
  con.connect(function(err) {
     if (err) throw err;
 	log_("Database conectado!")		    
     log_("Aguardando conexões ...")	
+
     //startGpios()
 });
 
@@ -73,60 +74,6 @@ function watchGpios(){
     });
 
     log_("GPIOs configuradas")
-}
-
-function updateTicketAsUsed(ticket){
-         
-    let sql = "UPDATE 3a_estoque_utilizavel \
-                SET 3a_estoque_utilizavel.utilizado = 1 \
-                WHERE id_estoque_utilizavel = " + ticket + " LIMIT 1;"
-
-   log_(sql)
-
-    con.query(sql, function (err1, result) {        
-        if (err1) throw err1;          
-        return true
-    });
-}
-
-function useTicket_(req){
-    
-    let idTotem = req.body.id
-    let idArea = req.body.idArea
-    let ticket = req.body.ticket
-
-    log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idArea)
-            
-    let sql = "INSERT INTO 3a_log_utilizacao \
-            (3a_log_utilizacao.fk_id_estoque_utilizavel, \
-             3a_log_utilizacao.fk_id_ponto_acesso, \
-             3a_log_utilizacao.fk_id_area_acesso, \
-             3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
-            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
-
-   log_(sql)
-
-    con.query(sql, function (err1, result) {        
-        if (err1) throw err1;          
-        
-        updateTicketAsUsed(ticket)        
-        return result
-    });
-}
-
-function getTicketInfo(ticket){        
-
-    let sql = "SELECT 3a_produto.nome_produto FROM 3a_log_vendas \
-    INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_log_vendas.fk_id_produto \
-    INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_vendas.fk_id_estoque_utilizavel \
-    WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
-
-    log_(sql)
-
-    con.query(sql, function (err1, result) {  
-        if (err1) throw err1;                          
-        return result
-    });
 }
 
 app.post('/getAreas', function(req, res) {
@@ -391,7 +338,7 @@ app.post('/checkTicketContinue', function(req, res) {
     let idPorta = req.body.idPorta
     let idArea = req.body.idArea
 
-    log_('Totem: '+ idTotem + ' - Verificando ticket continuação:', ticket)
+    log_('Totem: '+ idTotem + ' - Verificando ticket continuação:', ticket, idPorta, idArea)
             
     let sql = "SELECT 3a_log_vendas.data_log_venda,\
         3a_estoque_utilizavel.id_estoque_utilizavel,\
@@ -415,9 +362,13 @@ app.post('/checkTicketContinue', function(req, res) {
 
    log_(sql)
 
-    con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
-        res.json({"success": result}); 
+    con.query(sql, function (err1, result1) {        
+        if (err1) throw err1;      
+        
+        console.log(result1)
+
+
+        res.json({"success": result1}); 
     });
 });
 
@@ -475,9 +426,38 @@ app.post('/checkTicketUsedTotal', function(req, res) {
 });
 
 app.post('/useTicket', function(req, res) {
+    
+    let idTotem = req.body.id
+    let idArea = req.body.idArea
+    let ticket = req.body.ticket
 
-    let operation = useTicket_(req)       
-    res.json({"success": operation});  
+    log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idArea)
+            
+    let sql = "INSERT INTO 3a_log_utilizacao \
+            (3a_log_utilizacao.fk_id_estoque_utilizavel, \
+             3a_log_utilizacao.fk_id_ponto_acesso, \
+             3a_log_utilizacao.fk_id_area_acesso, \
+             3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
+            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
+
+   log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;          
+        
+        let sql_utilizacao = "UPDATE 3a_estoque_utilizavel \
+                SET 3a_estoque_utilizavel.utilizado = 1 \
+                WHERE id_estoque_utilizavel = " + ticket + " LIMIT 1;"
+
+        log_(sql_utilizacao)
+
+        con.query(sql_utilizacao, function (err2, result2) {        
+            if (err2) throw err2;          
+            res.json({"success": result}); 
+        });        
+    });
+    
+    
 });
 
 app.post('/checkMultipleTickets', function(req, res) {
