@@ -443,7 +443,7 @@ app.post('/useTicket', function(req, res) {
 
    log_(sql1)
 
-    con.query(sql, function (err1, result) {        
+    con.query(sql1, function (err1, result) {        
 
         if (err1) throw err1;          
         
