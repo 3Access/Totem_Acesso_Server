@@ -30,7 +30,7 @@ let con = mysql.createConnection({
 	log_("Database conectado!")		    
     log_("Aguardando conexões ...")	
 
-    //startGpios()
+    startGpios()
 });
 
 function log_(str){
@@ -42,15 +42,15 @@ function startGpios(){
 
     shell.exec('echo "2" > /sys/class/gpio/unexport', {silent:true});						
     shell.exec('echo "2" > /sys/class/gpio/export', {silent:true});										        
-    shell.exec('echo "in" > /sys/class/gpio/gpio2/direction', {silent:true});	    
+    shell.exec('echo "out" > /sys/class/gpio/gpio2/direction', {silent:true});	    
 
     shell.exec('echo "3" > /sys/class/gpio/unexport', {silent:true});						
     shell.exec('echo "3" > /sys/class/gpio/export', {silent:true});										        
-    shell.exec('echo "in" > /sys/class/gpio/gpio3/direction', {silent:true});	    
+    shell.exec('echo "out" > /sys/class/gpio/gpio3/direction', {silent:true});	    
 
     shell.exec('echo "4" > /sys/class/gpio/unexport', {silent:true});						
     shell.exec('echo "4" > /sys/class/gpio/export', {silent:true});										        
-    shell.exec('echo "in" > /sys/class/gpio/gpio4/direction', {silent:true});	    
+    shell.exec('echo "out" > /sys/class/gpio/gpio4/direction', {silent:true});	    
 
     watchGpios()
 }
@@ -59,18 +59,18 @@ function watchGpios(){
     log_("Configurando GPIOs")
 
     fs.watch('/sys/class/gpio/gpio2/value', { persistent: true }, function (event_, fileName) {
-        console.log('gpio-changed', fileName, event_)
-        io.emit('gpio-changed', {gpio: '2', event: event_});   
+        console.log('gpio2-changed', fileName, event_)
+        io.emit('gpio2', {gpio: '2', event: event_});   
     });
 
     fs.watch('/sys/class/gpio/gpio3/value', { persistent: true }, function (event_, fileName) {
-        console.log('gpio-changed', fileName, event_)
-        io.emit('gpio-changed', {gpio: '3', event: event_});   
+        console.log('gpio3-changed', fileName, event_)
+        io.emit('gpio3', {gpio: '3', event: event_});   
     });
 
     fs.watch('/sys/class/gpio/gpio4/value', { persistent: true }, function (event_, fileName) {
-        console.log('gpio-changed', fileName, event_)
-        io.emit('gpio-changed', {gpio: '4', event: event_});   
+        console.log('gpio4-changed', fileName, event_)
+        io.emit('gpio4', {gpio: '4', event: event_});   
     });
 
     log_("GPIOs configuradas")
