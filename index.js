@@ -18,6 +18,10 @@ app.use(bodyParser.json());
 app.use(methodOverride());
 app.use(cors());
 
+function log_(str){
+    console.log(str)
+}
+
 let con = mysql.createConnection({
     host: "10.8.0.50",
     user: "root",
@@ -28,13 +32,9 @@ let con = mysql.createConnection({
 
  con.connect(function(err) {
     if (err) throw err;
-	log_("Database conectado!")		    
+   log_("Database conectado!")		    
     log_("Aguardando conexões ...")	    
-});
-
-function log_(str){
-    console.log(str)
-}
+ });
 
 var gpio2 = new Gpio(2, 'out', 'both', {debounceTimeout: 10} )
 var gpio3 = new Gpio(3, 'out', 'both', {debounceTimeout: 10} )
