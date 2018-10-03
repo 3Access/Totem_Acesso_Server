@@ -11,6 +11,7 @@ let shell = require('shelljs');
 var fs = require("fs");
 var os = require('os');
 var ifaces = os.networkInterfaces();
+var Gpio = require('onoff').Gpio
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -28,53 +29,28 @@ let con = mysql.createConnection({
  con.connect(function(err) {
     if (err) throw err;
 	log_("Database conectado!")		    
-    log_("Aguardando conexões ...")	
-
-    startGpios()
+    log_("Aguardando conexões ...")	    
 });
 
 function log_(str){
     console.log(str)
 }
 
-function startGpios(){
-    log_("Iniciando GPIOs...")	
+var gpio2 = new Gpio(2, 'out', 'both', {debounceTimeout: 10} )
+var gpio3 = new Gpio(3, 'out', 'both', {debounceTimeout: 10} )
+var gpio4 = new Gpio(4, 'out', 'both', {debounceTimeout: 10} )
 
-    shell.exec('echo "2" > /sys/class/gpio/unexport', {silent:true});						
-    shell.exec('echo "2" > /sys/class/gpio/export', {silent:true});										        
-    shell.exec('echo "out" > /sys/class/gpio/gpio2/direction', {silent:true});	    
+gpio2.watch(function(err, value) {    
+    io.emit('gpio2', {gpio: '2', event: value});    
+});
 
-    shell.exec('echo "3" > /sys/class/gpio/unexport', {silent:true});						
-    shell.exec('echo "3" > /sys/class/gpio/export', {silent:true});										        
-    shell.exec('echo "out" > /sys/class/gpio/gpio3/direction', {silent:true});	    
+gpio3.watch(function(err, value) {    
+    io.emit('gpio3', {gpio: '3', event: value});    
+});
 
-    shell.exec('echo "4" > /sys/class/gpio/unexport', {silent:true});						
-    shell.exec('echo "4" > /sys/class/gpio/export', {silent:true});										        
-    shell.exec('echo "out" > /sys/class/gpio/gpio4/direction', {silent:true});	    
-
-    watchGpios()
-}
-
-function watchGpios(){
-    log_("Configurando GPIOs")
-
-    fs.watch('/sys/class/gpio/gpio2/value', { persistent: true }, function (event_, fileName) {
-        console.log('gpio2-changed', fileName, event_)
-        io.emit('gpio2', {gpio: '2', event: event_});   
-    });
-
-    fs.watch('/sys/class/gpio/gpio3/value', { persistent: true }, function (event_, fileName) {
-        console.log('gpio3-changed', fileName, event_)
-        io.emit('gpio3', {gpio: '3', event: event_});   
-    });
-
-    fs.watch('/sys/class/gpio/gpio4/value', { persistent: true }, function (event_, fileName) {
-        console.log('gpio4-changed', fileName, event_)
-        io.emit('gpio4', {gpio: '4', event: event_});   
-    });
-
-    log_("GPIOs configuradas")
-}
+gpio4.watch(function(err, value) {    
+    io.emit('gpio4', {gpio: '4', event: value});   
+});
 
 app.post('/getAreas', function(req, res) {
 
