@@ -40,16 +40,20 @@ var gpio2 = new Gpio(2, 'out', 'both', {debounceTimeout: 10} )
 var gpio3 = new Gpio(3, 'out', 'both', {debounceTimeout: 10} )
 var gpio4 = new Gpio(4, 'out', 'both', {debounceTimeout: 10} )
 
-gpio2.watch(function(err, value) {    
-    io.emit('gpio2', {gpio: '2', event: value});    
+gpio2.watch(function(err, value) {   
+	
+    if(value == 1)
+    	io.emit('gpio2', {gpio: '2', event: value});    
 });
 
 gpio3.watch(function(err, value) {    
-    io.emit('gpio3', {gpio: '3', event: value});    
+    if(value == 1)
+    	io.emit('gpio3', {gpio: '3', event: value});    
 });
 
 gpio4.watch(function(err, value) {    
-    io.emit('gpio4', {gpio: '4', event: value});   
+    if(value == 1)
+    	io.emit('gpio4', {gpio: '4', event: value});   
 });
 
 app.post('/getAreas', function(req, res) {
@@ -497,3 +501,4 @@ app.post('/getTotemInfo', function(req, res) {
 });
 
 http.listen(8085);
+
