@@ -18,10 +18,10 @@ app.use(methodOverride());
 app.use(cors());
 
 let con = mysql.createConnection({
-    host: "10.8.0.50",
-    user: "root",
-    password: "Mudaragora00",
-    database: "zoosp",
+    host: "192.168.0.20",
+    user: "totem",
+    password: "totem",
+    database: "3a_access",
     timezone: 'utc'
  });
 
