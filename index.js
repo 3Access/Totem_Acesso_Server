@@ -70,7 +70,7 @@ function blinkError(){
 }
 
 function blinkSuccess(){
-    console.log('Gpio success blink')
+    console.log('Gpio success    blink')
 
     const led = new Gpio(11, 'out'); 
     const iv = setInterval(() => led.writeSync(led.readSync() ^ 1), 200);
@@ -84,12 +84,12 @@ function blinkSuccess(){
 
 app.post('/activeGpioSuccess', function(req, res) {
     blinkSuccess()    
-    res.json({"success": result});
+    res.json({"success": "1"});
 });
 
 app.post('/activeGpioError', function(req, res) {
     blinkError()
-    res.json({"success": result});    
+    res.json({"success": "1"});    
 });
 
 app.post('/getAreas', function(req, res) {
