@@ -22,7 +22,6 @@ function log_(str){
     console.log(str)
 }
 
-
 let con = mysql.createConnection({
     host: "192.168.0.20",
     user: "totem",
@@ -57,6 +56,42 @@ gpio4.watch(function(err, value) {
     	io.emit('gpio4', {gpio: '4', event: value});   
 });
 
+function blinkError(){
+    console.log('Gpio error blink')
+
+    const led = new Gpio(6, 'out'); 
+    const iv = setInterval(() => led.writeSync(led.readSync() ^ 1), 200);
+
+    setTimeout(() => {
+        clearInterval(iv);
+        led.writeSync(0);
+        led.unexport(); 
+    }, 2000);
+}
+
+function blinkSuccess(){
+    console.log('Gpio success blink')
+
+    const led = new Gpio(11, 'out'); 
+    const iv = setInterval(() => led.writeSync(led.readSync() ^ 1), 200);
+
+    setTimeout(() => {
+        clearInterval(iv);
+        led.writeSync(0);
+        led.unexport(); 
+    }, 2000);
+}
+
+app.post('/activeGpioSuccess', function(req, res) {
+    blinkSuccess()    
+    res.json({"success": result});
+});
+
+app.post('/activeGpioError', function(req, res) {
+    blinkError()
+    res.json({"success": result});    
+});
+
 app.post('/getAreas', function(req, res) {
 
     let idTotem = req.body.id
@@ -80,7 +115,6 @@ app.post('/getAreas', function(req, res) {
             if (err1) throw err1;           
             res.json({"success": result}); 
         });
-
     }    
 });
 
@@ -414,9 +448,7 @@ app.post('/useTicket', function(req, res) {
             if (err2) throw err2;          
             res.json({"success": result}); 
         });        
-    });
-    
-    
+    });        
 });
 
 app.post('/checkMultipleTickets', function(req, res) {
