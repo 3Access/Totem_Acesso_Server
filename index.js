@@ -60,7 +60,7 @@ function blinkError(){
     console.log('Gpio error blink')
 
     const led = new Gpio(6, 'out'); 
-    const iv = setInterval(() => led.writeSync(led.readSync() ^ 1), 200);
+    const iv = setInterval(() => led.writeSync(1), 200);
 
     setTimeout(() => {
         clearInterval(iv);
@@ -73,7 +73,7 @@ function blinkSuccess(){
     console.log('Gpio success    blink')
 
     const led = new Gpio(11, 'out'); 
-    const iv = setInterval(() => led.writeSync(led.readSync() ^ 1), 200);
+    const iv = setInterval(() => led.writeSync(1), 200);
 
     setTimeout(() => {
         clearInterval(iv);
