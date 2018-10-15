@@ -22,6 +22,7 @@ function log_(str){
     console.log(str)
 }
 
+
 let con = mysql.createConnection({
     host: "192.168.0.20",
     user: "totem",
