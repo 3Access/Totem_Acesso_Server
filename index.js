@@ -36,14 +36,14 @@ let con = mysql.createConnection({
     log_("Aguardando conexões ...")	    
  });
 
-var gpio2 = new Gpio(2, 'out', 'both', {debounceTimeout: 10} )
+var gpioPageMultiple = new Gpio(4, 'out', 'both', {debounceTimeout: 10} )
 var gpio3 = new Gpio(3, 'out', 'both', {debounceTimeout: 10} )
-var gpio4 = new Gpio(4, 'out', 'both', {debounceTimeout: 10} )
+var gpio4 = new Gpio(17, 'out', 'both', {debounceTimeout: 10} )
 
-gpio2.watch(function(err, value) {   
+gpioPageMultiple.watch(function(err, value) {   
 	
     if(value == 1)
-    	io.emit('gpio2', {gpio: '2', event: value});    
+    	io.emit('gpioPageMultiple', {gpio: '4', event: value});    
 });
 
 gpio3.watch(function(err, value) {    
@@ -59,7 +59,7 @@ gpio4.watch(function(err, value) {
 function blinkError(){
     console.log('Gpio error blink')
 
-    const led = new Gpio(6, 'out'); 
+    const led = new Gpio(2, 'out'); 
     const iv = setInterval(() => led.writeSync(1), 200);
 
     setTimeout(() => {
@@ -72,7 +72,7 @@ function blinkError(){
 function blinkSuccess(){
     console.log('Gpio success    blink')
 
-    const led = new Gpio(11, 'out'); 
+    const led = new Gpio(3, 'out'); 
     const iv = setInterval(() => led.writeSync(1), 200);
 
     setTimeout(() => {
