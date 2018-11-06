@@ -36,14 +36,17 @@ let con = mysql.createConnection({
     log_("Aguardando conexões ...")	    
  });
 
-var gpioPageMultiple = new Gpio(4, 'out', 'both', {debounceTimeout: 10} )
+var gpioPageMultiple = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpio3 = new Gpio(3, 'out', 'both', {debounceTimeout: 10} )
 var gpio4 = new Gpio(17, 'out', 'both', {debounceTimeout: 10} )
 
 gpioPageMultiple.watch(function(err, value) {   
 	
-    if(value == 1)
+    if(value == 0){
+	console.log("GPIO 4 Desligado, enviando sinal de mudar página!")
     	io.emit('gpioPageMultiple', {gpio: '4', event: value});    
+   }
+
 });
 
 gpio3.watch(function(err, value) {    
@@ -51,9 +54,12 @@ gpio3.watch(function(err, value) {
     	io.emit('gpio3', {gpio: '3', event: value});    
 });
 
-gpio4.watch(function(err, value) {    
-    if(value == 1)
+gpio4.watch(function(err, value) {  
+  
+    if(value == 1){  
     	io.emit('gpio4', {gpio: '4', event: value});   
+  }
+
 });
 
 function blinkError(){
