@@ -69,26 +69,26 @@ function blinkError(){
     console.log('Gpio error blink')
 
     const led = new Gpio(2, 'out'); 
-    const iv = setInterval(() => led.writeSync(1), 200);
+    const iv = setInterval(() => led.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         led.writeSync(0);
         led.unexport(); 
-    }, 3000);
+    }, 5000);
 }
 
 function blinkSuccess(){
     console.log('Gpio success    blink')
 
     const led = new Gpio(3, 'out'); 
-    const iv = setInterval(() => led.writeSync(1), 200);
+    const iv = setInterval(() => led.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         led.writeSync(0);
         led.unexport(); 
-    }, 3000);
+    }, 5000);
 }
 
 app.post('/activeGpioSuccess', function(req, res) {
@@ -361,14 +361,10 @@ app.post('/checkTicketContinue', function(req, res) {
     AND 3a_porta_acesso.id_porta_acesso = " + idPorta + "\
     AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
 
-   log_(sql)
+   //log_(sql)
 
     con.query(sql, function (err1, result1) {        
-        if (err1) throw err1;      
-        
-        console.log(result1)
-
-
+        if (err1) throw err1;              
         res.json({"success": result1}); 
     });
 });
@@ -400,7 +396,7 @@ app.post('/checkTicketUsed', function(req, res) {
     AND 3a_porta_acesso.id_porta_acesso = " + idPorta + "\
     AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
 
-   log_(sql)
+   //log_(sql)
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;           
@@ -441,7 +437,7 @@ app.post('/useTicket', function(req, res) {
              3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
             VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
 
-   log_(sql1)
+   //log_(sql1)
 
     con.query(sql1, function (err1, result) {        
 
@@ -477,7 +473,7 @@ app.post('/checkMultipleTickets', function(req, res) {
     LEFT JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
     WHERE 3a_estoque_utilizavel.id_estoque_utilizavel BETWEEN " + ticketStart + " AND "+ ticketEnd + ";"
 
-   log_(sql)   
+   //log_(sql)   
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;   
