@@ -75,7 +75,7 @@ function blinkError(){
         clearInterval(iv);
         led.writeSync(0);
         led.unexport(); 
-    }, 2000);
+    }, 3000);
 }
 
 function blinkSuccess(){
@@ -88,7 +88,7 @@ function blinkSuccess(){
         clearInterval(iv);
         led.writeSync(0);
         led.unexport(); 
-    }, 2000);
+    }, 3000);
 }
 
 app.post('/activeGpioSuccess', function(req, res) {
