@@ -39,6 +39,11 @@ let con = mysql.createConnection({
 var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpioPageHistory      = new Gpio(5, 'in', 'both', {debounceTimeout: 10} )
 var gpioDecrementCounter = new Gpio(6, 'in', 'both', {debounceTimeout: 10} )
+var gpioSuccess          = new Gpio(3, 'out'); 
+var gpioError            = new Gpio(2, 'out'); 
+
+gpioSuccess.writeSync(0)
+gpioError.writeSync(0)
 
 gpioPageMultiple.watch(function(err, value) {   
 	
@@ -62,32 +67,25 @@ gpioDecrementCounter.watch(function(err, value) {
         console.log("GPIO 6 Desligado, enviando sinal de mudar página!")
     	io.emit('gpioDecrementCounter', {gpio: '6', event: value});   
   }
-
 });
 
 function blinkError(){
-    console.log('Gpio error blink')
 
-    const led = new Gpio(2, 'out'); 
-    const iv = setInterval(() => led.writeSync(1), 500);
+    const iv = setInterval(() => gpioError.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
-        led.writeSync(0);
-        led.unexport(); 
+        gpioError.writeSync(0);        
     }, 5000);
 }
 
 function blinkSuccess(){
-    console.log('Gpio success    blink')
-
-    const led = new Gpio(3, 'out'); 
-    const iv = setInterval(() => led.writeSync(1), 500);
+    
+    const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
-        led.writeSync(0);
-        led.unexport(); 
+        gpioSuccess.writeSync(0);        
     }, 5000);
 }
 
