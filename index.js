@@ -240,9 +240,9 @@ app.post('/checkTicketAreaAccess', function(req, res) {
 app.post('/checkTicketIsSold', function(req, res) {
 
     let idTotem = req.body.id
-    let ticket = req.body.ticket
+    let ticket = req.body.ticket    
 
-    log_('Totem: '+ idTotem + ' - Verificando ticket vendido:', ticket)
+    log_('Totem: '+ idTotem + ' - Verificando ticket vendido:', ticket)    
     
     let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel,\
         3a_log_vendas.data_log_venda \
