@@ -7,8 +7,6 @@ let bodyParser = require('body-parser');
 let logger = require('morgan');
 let methodOverride = require('method-override')
 let cors = require('cors');
-let shell = require('shelljs');
-var fs = require("fs");
 var os = require('os');
 var ifaces = os.networkInterfaces();
 var Gpio = require('onoff').Gpio
@@ -492,6 +490,10 @@ app.post('/getTotemInfo', function(req, res) {
           }
 
           address = iface.address
+
+          if(address.indexOf("10.8.0.") > -1){
+              return;
+          }
 
           if(address)
             sql = "SELECT 3a_ponto_acesso.*,\
