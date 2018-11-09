@@ -510,7 +510,7 @@ app.post('/useTicket', function(req, res) {
     
     let idTotem = req.body.id
     let idArea = req.body.idArea
-    let ticket = req.body.ticket.data.ticket
+    let ticket = req.body.ticket
 
     log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idArea)
 
