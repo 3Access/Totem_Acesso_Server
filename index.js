@@ -132,9 +132,9 @@ app.post('/getAreas', function(req, res) {
 
     let idTotem = req.body.id
 
-    if(idTotem == 0)
+    if(idTotem == 0){
         res.json({"success": false}); 
-
+    }        
     else {
 
         log_('Totem: '+ idTotem + ' - Verificando todas as areas:')
@@ -246,7 +246,8 @@ app.post('/checkTicketAreaAccess', function(req, res) {
     let ticket = req.body.ticket
 
     if(ticket.length <= 0){
-        res.json({"success": false}); 
+        let array = []
+        res.json({"success": array}); 
 
     } else {
 
@@ -280,7 +281,8 @@ app.post('/checkTicketIsSold', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando ticket vendido:', ticket)    
 
     if(ticket.length <= 0){
-        res.json({"success": false}); 
+        let array = []
+        res.json({"success": array}); 
 
     } else {
     
@@ -307,7 +309,8 @@ app.post('/checkTicketExist', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando se ticket existe:', ticket)
 
     if(ticket.length <= 0){
-        res.json({"success": false});
+        let array = []
+        res.json({"success": array}); 
 
     } else {
             
@@ -332,7 +335,8 @@ app.post('/checkTicket', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
 
     if(ticket.length <= 0){
-        res.json({"success": false});
+        let array = []
+        res.json({"success": array}); 
 
     } else {
             
@@ -364,7 +368,8 @@ app.post('/checkTicketQuick', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando ticket rápido:', ticket)
 
     if(ticket.length <= 0){
-        res.json({"success": false});
+        let array = []
+        res.json({"success": array}); 
 
     } else {
 
@@ -399,7 +404,8 @@ app.post('/checkTicketContinue', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando ticket continuação:', ticket, idPorta, idArea)
 
     if(ticket.length <= 0){
-        res.json({"success": false});
+        let array = []
+        res.json({"success": array}); 
 
     } else {
 
@@ -443,7 +449,8 @@ app.post('/checkTicketUsed', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
 
     if(ticket.length <= 0){
-        res.json({"success": false});
+        let array = []
+        res.json({"success": array}); 
 
     } else {
 
@@ -482,7 +489,8 @@ app.post('/checkTicketUsedTotal', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
 
     if(ticket.length <= 0){
-        res.json({"success": false});
+        let array = []
+        res.json({"success": array}); 
 
     } else {
 
@@ -507,7 +515,8 @@ app.post('/useTicket', function(req, res) {
     log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idArea)
 
     if(ticket.length <= 0){
-        res.json({"success": false});
+        let array = []
+        res.json({"success": array}); 
 
     } else {
 
@@ -547,7 +556,8 @@ app.post('/checkMultipleTickets', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando vários ticket:', ticketStart, ticketEnd)
 
     if(ticket.length <= 0){
-        res.json({"success": false});
+        let array = []
+        res.json({"success": array}); 
 
     } else {
 
