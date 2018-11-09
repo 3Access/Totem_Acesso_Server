@@ -9,6 +9,7 @@ let methodOverride = require('method-override')
 let cors = require('cors');
 var os = require('os');
 var ifaces = os.networkInterfaces();
+var moment = require('moment');
 var Gpio = require('onoff').Gpio
 
 app.use(logger('dev'));
@@ -17,22 +18,52 @@ app.use(methodOverride());
 app.use(cors());
 
 function log_(str){
-    console.log(str)
+    let now = moment().format("DD/MM/YYYY hh:mm:ss")
+    let msg = "[" + now + "] " + str
+    console.log(msg)
 }
 
-let con = mysql.createConnection({
-    host: "192.168.0.20",
-    user: "totem",
-    password: "totem",
-    database: "3a_access",
-    timezone: 'utc'
- });
+var db_config = {
+    host: "10.0.2.180",
+    user: "root",
+    password: "Mudaragora00",
+    database: "zoosp"
+};
 
- con.connect(function(err) {
-    if (err) throw err;
+/*var db_config = {
+    host: "192.168.0.20",
+    user: "root",
+    password: "senhaRoot",
+    database: "3a_access"
+};*/
+
+let con;
+
+function handleDisconnect() {
+
+    con = mysql.createConnection(db_config);
+   
+    con.connect(function(err) {
+       if (err){
+        setTimeout(handleDisconnect, 2000);
+       }
+
+       con.on('error', function(err) {
+
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnect();  
+
+        } else 
+            throw err;  
+        
+    });
+
     log_("Database conectado!")		    
-    log_("Aguardando conexões ...")	    
- });
+    log_("Aguardando conexões ...")	
+   });
+}
+
+handleDisconnect()
 
 var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpioPageHistory      = new Gpio(5, 'in', 'both', {debounceTimeout: 10} )
