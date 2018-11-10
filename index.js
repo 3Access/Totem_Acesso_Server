@@ -555,13 +555,7 @@ app.post('/checkMultipleTickets', function(req, res) {
 
     log_('Totem: '+ idTotem + ' - Verificando vários ticket:', ticketStart, ticketEnd)
 
-    if(ticket.length <= 0){
-        let array = []
-        res.json({"success": array}); 
-
-    } else {
-
-        let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel, false AS MODIFICADO,\
+    let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel, false AS MODIFICADO,\
             3a_ponto_acesso.nome_ponto_acesso,\
             3a_log_vendas.data_log_venda \
             FROM 3a_estoque_utilizavel \
@@ -572,11 +566,10 @@ app.post('/checkMultipleTickets', function(req, res) {
 
     //log_(sql)   
 
-        con.query(sql, function (err1, result) {        
-            if (err1) throw err1;   
-            res.json({"success": result});  
-        });
-    }                
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;   
+        res.json({"success": result});  
+    });              
 });
 
 app.post('/getTotemInfo', function(req, res) {    
