@@ -24,7 +24,7 @@ function log_(str){
 }
 
 var db_config = {
-    host: "10.0.2.180",
+    host: "10.8.0.50",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
