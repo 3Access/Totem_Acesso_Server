@@ -31,7 +31,7 @@ function log_(str){
 };*/
 
 var db_config = {
-    host: "10.2.0.180",
+    host: "10.0.2.180",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
