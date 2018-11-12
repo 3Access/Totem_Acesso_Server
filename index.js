@@ -65,7 +65,7 @@ function handleDisconnect() {
 
 handleDisconnect()
 
-/*var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
+var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpioPageHistory      = new Gpio(5, 'in', 'both', {debounceTimeout: 10} )
 var gpioDecrementCounter = new Gpio(6, 'in', 'both', {debounceTimeout: 10} )
 var gpioSuccess          = new Gpio(3, 'out'); 
@@ -116,8 +116,7 @@ function blinkSuccess(){
         clearInterval(iv);
         gpioSuccess.writeSync(0);        
     }, 5000);
-}*/
-
+}
 
 function checkTicketExists(req, res){
 
@@ -507,12 +506,12 @@ function ticketInfo(req, res){
 }
 
 app.post('/activeGpioSuccess', function(req, res) {
-    //blinkSuccess()    
+    blinkSuccess()    
     res.json({"success": "1"});
 });
 
 app.post('/activeGpioError', function(req, res) {
-    //blinkError()
+    blinkError()
     res.json({"success": "1"});    
 });
 
