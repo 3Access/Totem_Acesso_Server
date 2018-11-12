@@ -23,19 +23,19 @@ function log_(str){
     console.log(msg)
 }
 
-var db_config = {
+/*var db_config = {
     host: "10.8.0.50",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
-};
-
-/*var db_config = {
-    host: "192.168.0.20",
-    user: "root",
-    password: "senhaRoot",
-    database: "3a_access"
 };*/
+
+var db_config = {
+    host: "10.2.0.180",
+    user: "root",
+    password: "Mudaragora00",
+    database: "zoosp"
+};
 
 let con;
 
