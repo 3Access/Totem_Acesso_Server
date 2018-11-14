@@ -298,6 +298,7 @@ function ticketValidityInfinite(req, res, result){
     let sql = "SELECT 3a_log_utilizacao.data_log_utilizacao,\
             3a_estoque_utilizavel.id_estoque_utilizavel,\
             3a_porta_acesso.*,\
+            3a_log_vendas.data_log_venda,\
             3a_tipo_produto.*,\
             3a_ponto_acesso.nome_ponto_acesso \
             FROM 3a_log_utilizacao \
