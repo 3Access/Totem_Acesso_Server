@@ -318,7 +318,7 @@ function ticketValidityInfinite(req, res, result){
             if (err1) throw err1;   
             
             if(result1.length == 0)
-                useTicket(req, res, result)
+                checkDoorRules(req, res, result)
             
             else {
     
