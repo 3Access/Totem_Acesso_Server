@@ -292,7 +292,7 @@ function ticketValidityInfinite(req, res, result){
     let ticket = result[0].id_estoque_utilizavel   
     log_('Totem: '+ idTotem + ' - Verificando ticket validade infinita: ' + ticket)
 
-    useTicket(req, res)
+    useTicket(req, res, result)
 }
 
 function ticketValidityTime(req, res, result){
