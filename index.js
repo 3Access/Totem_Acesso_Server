@@ -321,7 +321,7 @@ function ticketValidityInfinite(req, res, result){
             
             else {
     
-                let callback = [{"callback": 6, "result": result1}]
+                let callback = [{"callback": 12, "result": result1}]
                 res.json({"success": callback});
             }                
         });
