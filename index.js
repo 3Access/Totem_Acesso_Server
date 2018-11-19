@@ -398,7 +398,7 @@ function ticketAccessOnlyone(req, res, result){
     let ticket = result[0].id_estoque_utilizavel           
     let idArea = req.body.idArea
     let idPorta = req.body.idPorta
-    let idTotem = req.body.id
+    let idTotem = req.body.totemId
         
     log_('Totem: '+ idTotem + ' - Verificando regras das portas acesso único: ', ticket)       
 
@@ -416,8 +416,9 @@ function ticketAccessOnlyone(req, res, result){
         INNER JOIN 3a_tipo_produto ON 3a_tipo_produto.id_tipo_produto = 3a_produto.fk_id_tipo_produto \
         INNER JOIN 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
         INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
-        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + "\
-        AND 3a_porta_acesso.id_porta_acesso = " + idPorta + "\
+        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + " \
+        AND 3a_porta_acesso.id_porta_acesso = " + idPorta + " \
+        AND 3a_ponto_acesso.id_ponto_acesso = " + idTotem + " \
         AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
 
         //log_(sql)
@@ -440,14 +441,23 @@ function ticketAccessCountPass(req, res, result){
 
     let ticket = result[0].id_estoque_utilizavel               
     let numero_liberacoes = result[0].numero_liberacoes
-    let idTotem = req.body.id
+    let idArea = req.body.idArea
+    let idPorta = req.body.idPorta
+    let idTotem = req.body.totemId
     
     log_('Totem: '+ idTotem + ' - Verificando regras acesso contado: ', ticket)       
 
-    let sql = "SELECT COUNT(3a_log_utilizacao.data_log_utilizacao) AS TOTAL FROM 3a_log_utilizacao \
-            WHERE 3a_log_utilizacao.fk_id_estoque_utilizavel = " + ticket + ";"
+    let sql = "SELECT COUNT(3a_log_utilizacao.data_log_utilizacao) AS TOTAL \
+            FROM 3a_log_utilizacao \
+            INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
+            INNER JOIN 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
+            INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
+            WHERE 3a_log_utilizacao.fk_id_estoque_utilizavel = " + ticket + "\
+            AND 3a_ponto_acesso.id_ponto_acesso = " + idTotem + " \
+            AND 3a_porta_acesso.id_porta_acesso = " + idPorta + " \
+            AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";"
 
-    //log_(sql)
+    log_(sql)
 
     con.query(sql, function (err1, result1) {        
         if (err1) throw err1;           
