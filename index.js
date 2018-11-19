@@ -398,7 +398,7 @@ function ticketAccessOnlyone(req, res, result){
     let ticket = result[0].id_estoque_utilizavel           
     let idArea = req.body.idArea
     let idPorta = req.body.idPorta
-    let idTotem = req.body.totemId
+    let idTotem = req.body.id
         
     log_('Totem: '+ idTotem + ' - Verificando regras das portas acesso único: ', ticket)       
 
@@ -443,7 +443,7 @@ function ticketAccessCountPass(req, res, result){
     let numero_liberacoes = result[0].numero_liberacoes
     let idArea = req.body.idArea
     let idPorta = req.body.idPorta
-    let idTotem = req.body.totemId
+    let idTotem = req.body.id
     
     log_('Totem: '+ idTotem + ' - Verificando regras acesso contado: ', ticket)       
 
