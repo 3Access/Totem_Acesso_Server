@@ -447,7 +447,7 @@ function ticketAccessCountPass(req, res, result){
     
     log_('Totem: '+ idTotem + ' - Verificando regras acesso contado: ', ticket)       
 
-    let sql = "SELECT COUNT(3a_log_utilizacao.data_log_utilizacao) AS TOTAL \
+    let sql = "SELECT COUNT(3a_log_utilizacao.data_log_utilizacao) AS TOTAL, 3a_ponto_acesso.nome_ponto_acesso \
             FROM 3a_log_utilizacao \
             INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
             INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_utilizacao.fk_id_estoque_utilizavel \
@@ -462,7 +462,7 @@ function ticketAccessCountPass(req, res, result){
             AND 3a_porta_acesso.id_porta_acesso = " + idPorta + " \
             AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";"
 
-    log_(sql)
+    //log_(sql)
 
     con.query(sql, function (err1, result1) {        
         if (err1) throw err1;           
