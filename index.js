@@ -220,6 +220,7 @@ function checkTicketContinue(req, res, result){
             3a_produto.nome_produto,\
             3a_tipo_produto.nome_tipo_produto, \
             3a_porta_acesso.*,\
+            3a_ponto_acesso.nome_ponto_acesso,\
             3a_validade.* \
             FROM 3a_log_vendas \
         INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_log_vendas.fk_id_produto \
@@ -230,6 +231,7 @@ function checkTicketContinue(req, res, result){
         INNER join 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
         INNER JOIN 3a_area_acesso ON 3a_area_acesso.id_area_acesso = 3a_subtipo_area_autorizada.fk_id_area_acesso \
         INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_area_acesso = 3a_area_acesso.id_area_acesso \
+        INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_porta_acesso.fk_id_ponto_acesso \
         WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + "\
         AND 3a_porta_acesso.id_porta_acesso = " + idPorta + "\
         AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
