@@ -100,7 +100,7 @@ gpioDecrementCounter.watch(function(err, value) {
 
 function blinkError(){
 
-    const iv = setInterval(() => gpioError.writeSync(1), 500);
+   const iv = setInterval(() => gpioError.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
@@ -108,8 +108,7 @@ function blinkError(){
     }, 5000);
 }
 
-function blinkSuccess(){
-    
+function blinkSuccess(){    
     const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
 
     setTimeout(() => {
@@ -198,11 +197,35 @@ function checkTicketAccess(req, res, result){
         if(result[0])
             checkTicketContinue(req, res, result)
 
-        else {
-            let callback = [{"callback": 3, "result": result}]
-            res.json({"success": callback});            
-        }
+        else 
+            checkTicketAccessPoints(ticket, res)                 
     });
+}
+
+function checkTicketAccessPoints(ticket, res){    
+            
+    log_('Totem: Verificando pontos permitidos do ticket: ' + ticket)
+   
+    let sql = "SELECT 3a_ponto_acesso.nome_ponto_acesso, 3a_estoque_utilizavel.id_estoque_utilizavel \
+                FROM  3a_estoque_utilizavel \
+                INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+                INNER join 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
+                INNER join 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
+                INNER join 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
+                INNER JOIN 3a_area_acesso ON 3a_area_acesso.id_area_acesso = 3a_subtipo_area_autorizada.fk_id_area_acesso \
+                INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_area_acesso = 3a_area_acesso.id_area_acesso \
+                INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_porta_acesso.fk_id_ponto_acesso \
+            WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
+
+    //log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;           
+        
+        let callback = [{"callback": 3, "result": result}]
+        res.json({"success": callback});   
+
+    });    
 }
 
 function checkTicketContinue(req, res, result){
@@ -673,7 +696,7 @@ app.post('/checkTicketQuick', function(req, res) {
         INNER JOIN 3a_validade ON 3a_validade.id_validade = 3a_log_vendas.fk_id_validade \
         WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
 
-        //log_(sql)
+        log_(sql)
 
         con.query(sql, function (err1, result) {        
             if (err1) throw err1;           
