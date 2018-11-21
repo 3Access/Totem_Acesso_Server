@@ -23,19 +23,19 @@ function log_(str){
     console.log(msg)
 }
 
-var db_config = {
+/*var db_config = {
     host: "10.8.0.50",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
-};
+};*/
 
-/*var db_config = {
+var db_config = {
     host: "10.0.2.180",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
-};*/
+};
 
 let con;
 
@@ -66,7 +66,7 @@ function handleDisconnect() {
 handleDisconnect()
 
 
-/*var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
+var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpioPageHistory      = new Gpio(5, 'in', 'both', {debounceTimeout: 10} )
 var gpioDecrementCounter = new Gpio(6, 'in', 'both', {debounceTimeout: 10} )
 var gpioSuccess          = new Gpio(3, 'out'); 
@@ -97,25 +97,25 @@ gpioDecrementCounter.watch(function(err, value) {
         console.log("GPIO 6 Desligado, enviando sinal de mudar página!")
     	io.emit('gpioDecrementCounter', {gpio: '6', event: value});   
   }
-});*/
+});
 
 function blinkError(){
 
-   /*const iv = setInterval(() => gpioError.writeSync(1), 500);
+   const iv = setInterval(() => gpioError.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioError.writeSync(0);        
-    }, 5000);*/
+    }, 5000);
 }
 
 function blinkSuccess(){    
-    /*const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
+    const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioSuccess.writeSync(0);        
-    }, 5000);*/
+    }, 5000);
 }
 
 function checkTicketExists(req, res){
@@ -489,7 +489,7 @@ function ticketAccessCountPass(req, res, result){
             AND 3a_porta_acesso.id_porta_acesso = " + idPorta + " \
             AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";"
 
-    log_(sql)
+    //log_(sql)
 
     con.query(sql, function (err1, result1) {        
         if (err1) throw err1;           
@@ -547,6 +547,45 @@ function ticketInfo(req, res){
         res.json({"success": result1}); 
     });
 }
+
+app.post('/checkTicketUsedTotal', function(req, res) {
+
+    let idArea = req.body.idArea
+    let idPorta = req.body.idPorta
+    let ticket = req.body.ticket
+    let idTotem = req.body.id            
+
+    log_('Totem: '+ idTotem + ' - Verificando total utilizado do ticket:', ticket)
+
+    if(ticket.length <= 0){
+        let array = []
+        res.json({"success": array}); 
+
+    } else {
+
+        let sql = "SELECT COUNT(3a_log_utilizacao.data_log_utilizacao) AS TOTAL, \
+            3a_ponto_acesso.nome_ponto_acesso,\
+            3a_porta_acesso.numero_liberacoes \
+            FROM 3a_log_utilizacao \
+            INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
+            INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_utilizacao.fk_id_estoque_utilizavel \
+            INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+            INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
+            INNER JOIN 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
+            INNER JOIN 3a_tipo_produto ON 3a_tipo_produto.id_tipo_produto = 3a_produto.fk_id_tipo_produto \
+            INNER JOIN 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
+            INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
+            WHERE 3a_log_utilizacao.fk_id_estoque_utilizavel = " + ticket + "\
+            AND 3a_ponto_acesso.id_ponto_acesso = " + idTotem + " \
+            AND 3a_porta_acesso.id_porta_acesso = " + idPorta + " \
+            AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";"
+
+        con.query(sql, function (err1, result) {        
+            if (err1) throw err1;           
+            res.json({"success": result}); 
+        });
+    }                
+});
 
 app.post('/activeGpioSuccess', function(req, res) {
     blinkSuccess()    
