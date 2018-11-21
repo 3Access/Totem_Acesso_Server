@@ -23,19 +23,19 @@ function log_(str){
     console.log(msg)
 }
 
-/*var db_config = {
+var db_config = {
     host: "10.8.0.50",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
-};*/
+};
 
-var db_config = {
+/*var db_config = {
     host: "10.0.2.180",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
-};
+};*/
 
 let con;
 
@@ -749,15 +749,12 @@ app.post('/checkMultipleTickets', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando vários ticket:', ticketStart, ticketEnd)
 
     let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel, false AS MODIFICADO,\
-            3a_ponto_acesso.nome_ponto_acesso,\
             3a_log_vendas.data_log_venda \
             FROM 3a_estoque_utilizavel \
         LEFT JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
-        LEFT JOIN 3a_log_utilizacao ON 3a_log_utilizacao.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
-        LEFT JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
         WHERE 3a_estoque_utilizavel.id_estoque_utilizavel BETWEEN " + ticketStart + " AND "+ ticketEnd + ";"
 
-    //log_(sql)   
+    log_(sql)   
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;   
