@@ -23,19 +23,19 @@ function log_(str){
     console.log(msg)
 }
 
-/*var db_config = {
+var db_config = {
     host: "10.8.0.50",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
-};*/
+};
 
-var db_config = {
+/*var db_config = {
     host: "10.0.2.180",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
-};
+};*/
 
 let con;
 
@@ -66,7 +66,7 @@ function handleDisconnect() {
 handleDisconnect()
 
 
-var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
+/*var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpioPageHistory      = new Gpio(5, 'in', 'both', {debounceTimeout: 10} )
 var gpioDecrementCounter = new Gpio(6, 'in', 'both', {debounceTimeout: 10} )
 var gpioSuccess          = new Gpio(3, 'out'); 
@@ -97,26 +97,26 @@ gpioDecrementCounter.watch(function(err, value) {
         console.log("GPIO 6 Desligado, enviando sinal de mudar página!")
     	io.emit('gpioDecrementCounter', {gpio: '6', event: value});   
   }
-});
+});*/
 
 function blinkError(){
 
-   const iv = setInterval(() => gpioError.writeSync(1), 500);
+   /*const iv = setInterval(() => gpioError.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioError.writeSync(0);        
-    }, 5000);
+    }, 5000);*/
 }
 
 function blinkSuccess(){    
-    const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
+    /*const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioSuccess.writeSync(0);        
 
-    }, 5000);
+    }, 5000);*/
 }
 
 function checkTicketExists(req, res){
@@ -795,7 +795,7 @@ app.post('/checkMultipleTickets', function(req, res) {
         LEFT JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
         WHERE 3a_estoque_utilizavel.id_estoque_utilizavel BETWEEN " + ticketStart + " AND "+ ticketEnd + ";"
 
-    log_(sql)   
+    //log_(sql)   
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;   
