@@ -226,7 +226,6 @@ function checkTicketAccessPoints(ticket, res){
         
         let callback = [{"callback": 3, "result": result}]
         res.json({"success": callback});   
-
     });    
 }
 
@@ -385,9 +384,8 @@ function ticketAccessTimeDoor(req, res, result){
     let idTotem = req.body.id        
     let idPorta = req.body.idPorta
     let idArea = req.body.idArea
-
     let ticket = result[0].id_estoque_utilizavel   
-    let idTotem = req.body.id       
+
     log_('Totem: '+ idTotem + ' - Verificando regras das portas Tempo: ', ticket)           
 
     let until =  moment(result[0].data_log_venda).add(result[0].horas_porta_acesso, 'hours').format();
@@ -416,7 +414,7 @@ function ticketAccessTimeDoor(req, res, result){
         AND 3a_ponto_acesso.id_ponto_acesso = " + idTotem + " \
         AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
 
-        log_(sql)
+        //log_(sql)
 
         con.query(sql, function (err1, result1) {        
             if (err1) throw err1;   
