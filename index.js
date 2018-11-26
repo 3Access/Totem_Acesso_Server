@@ -361,13 +361,14 @@ function ticketValidityTime(req, res, result){
         con.query(sql, function (err1, result1) {        
             if (err1) throw err1;   
             
-            if(result1.length == 0)
-                checkDoorRules(req, res, result)
-            
-            else {
-    
+            if(result1.length > 0){
                 let callback = [{"callback": 10, "result": result1}]
                 res.json({"success": callback});
+            }
+                            
+            else {
+                checkDoorRules(req, res, result)
+                
             }                
         });
 
