@@ -420,13 +420,12 @@ function ticketAccessTimeDoor(req, res, result){
             if (err1) throw err1;   
             
             if(result1.length > 0){
-
                 let callback = [{"callback": 8, "result": result}]
                 res.json({"success": callback});
-            }
-                            
+                
+            }                            
             else {
-                checkDoorRules(req, res, result)                
+                useTicket(req, res, result)
             }                
         }); 
 
