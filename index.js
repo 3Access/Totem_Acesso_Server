@@ -23,19 +23,19 @@ function log_(str){
     console.log(msg)
 }
 
-var db_config = {
+/*var db_config = {
     host: "10.8.0.50",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
-};
+};*/
 
-/*var db_config = {
+var db_config = {
     host: "10.0.2.180",
     user: "root",
     password: "Mudaragora00",
     database: "zoosp"
-};*/
+};
 
 let con;
 
@@ -66,7 +66,7 @@ function handleDisconnect() {
 handleDisconnect()
 
 
-/*var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
+var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpioPageHistory      = new Gpio(5, 'in', 'both', {debounceTimeout: 10} )
 var gpioDecrementCounter = new Gpio(6, 'in', 'both', {debounceTimeout: 10} )
 var gpioSuccess          = new Gpio(3, 'out'); 
@@ -97,26 +97,26 @@ gpioDecrementCounter.watch(function(err, value) {
         console.log("GPIO 6 Desligado, enviando sinal de mudar página!")
     	io.emit('gpioDecrementCounter', {gpio: '6', event: value});   
   }
-});*/
+});
 
 function blinkError(){
 
-   /*const iv = setInterval(() => gpioError.writeSync(1), 500);
+   const iv = setInterval(() => gpioError.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioError.writeSync(0);        
-    }, 5000);*/
+    }, 5000);
 }
 
 function blinkSuccess(){    
-    /*const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
+    const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioSuccess.writeSync(0);        
 
-    }, 5000);*/
+    }, 5000);
 }
 
 function checkTicketExists(req, res){
@@ -358,21 +358,21 @@ function ticketValidityTime(req, res, result){
         AND 3a_ponto_acesso.id_ponto_acesso = " + idTotem + " \
         AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
 
+        log_(sql)
+
         con.query(sql, function (err1, result1) {        
             if (err1) throw err1;   
             
             if(result1.length > 0){
-                let callback = [{"callback": 10, "result": result1}]
+
+                let callback = [{"callback": 10, "result": result}]
                 res.json({"success": callback});
             }
                             
             else {
-                checkDoorRules(req, res, result)
-                
+                checkDoorRules(req, res, result)                
             }                
-        });
-
-        
+        });        
     }        
 
     else {
