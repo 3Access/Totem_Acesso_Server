@@ -395,11 +395,6 @@ function ticketAccessTimeDoor(req, res, result){
 
     if(isAfter){
       
-        let callback = [{"callback": 8, "result": result}]
-        res.json({"success": callback});
-
-    } else {        
-
         let sql = "SELECT 3a_log_utilizacao.data_log_utilizacao,\
             3a_estoque_utilizavel.id_estoque_utilizavel,\
             3a_porta_acesso.*,\
@@ -433,6 +428,10 @@ function ticketAccessTimeDoor(req, res, result){
                 useTicket(req, res, result)
             }                
         }); 
+
+    } else {
+        let callback = [{"callback": 8, "result": result}]
+        res.json({"success": callback});
     } 
 }
 
