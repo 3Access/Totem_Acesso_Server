@@ -979,6 +979,10 @@ app.post('/checkTicketContinueMultiple', function(req, res) {
     });               
 });
 
+app.post('/checkTicketContinueMultiple', function(req, res) {
+
+});
+
 app.post('/useTicketMultiple', function(req, res) {
     
     let idTotem = req.body.id
@@ -1046,6 +1050,27 @@ app.post('/checkTicketUsed', function(req, res) {
             res.json({"success": result, "data": req.body}); 
         });            
 });
+
+app.post('/checkTicketUsedSimple', function(req, res) {
+    let idTotem = req.body.id
+    let ticket = req.body.ticket    
+
+    log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
+
+    let sql = "SELECT 3a_log_utilizacao.data_log_utilizacao,\
+            3a_estoque_utilizavel.id_estoque_utilizavel,\
+            FROM 3a_log_utilizacao \
+        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";";
+
+        //log_(sql)
+
+        con.query(sql, function (err1, result) {        
+            if (err1) throw err1;           
+            res.json({"success": result, "data": req.body}); 
+        });            
+});
+
+
 
 
 http.listen(8085);
