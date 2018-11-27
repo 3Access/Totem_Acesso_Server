@@ -1058,7 +1058,7 @@ app.post('/checkTicketUsedSimple', function(req, res) {
     log_('Totem: '+ idTotem + ' - Verificando utilização do ticket: ', ticket)
 
     let sql = "SELECT * FROM 3a_log_utilizacao \
-        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";";
+        WHERE 3a_log_utilizacao.fk_id_estoque_utilizavel = " + ticket + ";";
 
         //log_(sql)
 
