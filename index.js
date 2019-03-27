@@ -1089,16 +1089,7 @@ app.post('/checkTicketOut', function(req, res) {
     con.query(sql1, function (err1, result) {        
 
         if (err1) throw err1;          
-        
-        let sql = "UPDATE \
-            3a_area_acesso \
-            SET 3a_area_acesso.lotacao_area_acesso = 3a_area_acesso.lotacao_area_acesso - 1 \
-            WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"
-
-        con.query(sql, function (err1, result) {        
-            if (err1) throw err1;           
-            res.json({"success": result}); 
-        });
+        res.json({"success": result}); 
     });                        
 });
 
