@@ -869,7 +869,7 @@ app.post('/getTotemInfo', function(req, res) {
         });
       }); 
       
-    //log_(sql)   
+    log_(sql)   
 
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;   
