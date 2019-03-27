@@ -1073,14 +1073,9 @@ app.post('/checkTicketOut', function(req, res) {
 
     let idTotem = req.body.id    
     let ticket = req.body.ticket
-
-    log_('Totem: '+ idTotem + ' - Marcando saída:', ticket)
-
-    let idTotem = req.body.id
     let idArea = req.body.idArea
-    let ticket = req.body.ticket
 
-    log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idArea)
+    log_('Totem: '+ idTotem + ' - Marcando saída:', ticket)        
 
     let sql1 = "INSERT INTO 3a_log_utilizacao \
             (3a_log_utilizacao.fk_id_estoque_utilizavel,\
