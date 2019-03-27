@@ -31,10 +31,10 @@ function log_(str){
 };*/
 
 var db_config = {
-    host: "10.0.2.180",
+    host: "10.0.2.146",
     user: "root",
     password: "Mudaragora00",
-    database: "zoosp"
+    database: "3access"
 };
 
 let con;
@@ -326,7 +326,8 @@ function ticketValidityInfinite(req, res, result){
 function ticketValidityTime(req, res, result){
 
     let idTotem = req.body.id
-    let ticket = result[0].id_estoque_utilizavel           
+    let ticket = result[0]
+    let id_estoque_utilizavel = ticket.id_estoque_utilizavel
 
     let tempo_validade = ticket.tempo_validade
     this.statusTicketStart = moment(ticket.data_log_venda).format("L")    
@@ -334,7 +335,7 @@ function ticketValidityTime(req, res, result){
     let now = moment().format()        
     let isAfter = moment(until).isAfter(now);
 
-    log_('Totem: '+ idTotem + ' - Verificando ticket validade tempo: ' + ticket)
+    log_('Totem: '+ idTotem + ' - Verificando ticket validade tempo: ' + id_estoque_utilizavel)
 
     if(isAfter)
         checkDoorRules(req, res, result)    
