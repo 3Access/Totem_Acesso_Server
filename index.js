@@ -131,7 +131,7 @@ function checkTicketExists(req, res){
     //log_(sql)
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;  
+        //if (err1) throw err1;  
         
         if(result[0])
             checkTicketIsSold(req, res)
@@ -159,7 +159,7 @@ function checkTicketIsSold(req, res){
     //log_(sql)
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;  
+        //if (err1) throw err1;  
                 
         if(result[0])
             checkTicketAccess(req, res, result);     
@@ -194,7 +194,7 @@ function checkTicketAccess(req, res, result){
     //log_(sql)
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
+        //if (err1) throw err1;           
         
         if(result[0])
             checkTicketContinue(req, res, result)
@@ -222,7 +222,7 @@ function checkTicketAccessPoints(ticket, res){
     //log_(sql)
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
+        //if (err1) throw err1;           
         
         let callback = [{"callback": 3, "result": result}]
         res.json({"success": callback});   
@@ -263,7 +263,7 @@ function checkTicketContinue(req, res, result){
     //log_(sql)
 
     con.query(sql, function (err, result) {        
-        if (err) throw err;              
+        //if (err) throw err;              
         
         if(result[0])
             checkTicketValidity(req, res, result)
@@ -418,7 +418,7 @@ function ticketAccessTimeDoor(req, res, result){
         //log_(sql)
 
         con.query(sql, function (err1, result1) {        
-            if (err1) throw err1;   
+            //if (err1) throw err1;   
             
             if(result1.length > 0){
                 let callback = [{"callback": 12, "result": result}]
@@ -488,7 +488,7 @@ function ticketAccessOnlyone(req, res, result){
     //log_(sql)
 
     con.query(sql, function (err1, result1) {        
-        if (err1) throw err1;   
+        //if (err1) throw err1;   
         
         if(result1.length == 0)
             useTicket(req, res, result)
@@ -581,7 +581,7 @@ function ticketInfo(req, res){
     //log_(sql)
 
     con.query(sql, function (err1, result1) {        
-        if (err1) throw err1;           
+       // if (err1) throw err1;           
         res.json({"success": result1}); 
     });
 }
@@ -619,7 +619,7 @@ app.post('/checkTicketUsedTotal', function(req, res) {
             AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";"
 
         con.query(sql, function (err1, result) {        
-            if (err1) throw err1;           
+          //  if (err1) throw err1;           
             res.json({"success": result}); 
         });
     }                
@@ -680,7 +680,7 @@ app.post('/getAreaInfo', function(req, res) {
     //log_(sql)
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
+       // if (err1) throw err1;           
         res.json({"success": result}); 
     });
 });
@@ -702,7 +702,7 @@ app.post('/getAreaCounter', function(req, res) {
     WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"    
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
+       // if (err1) throw err1;           
         res.json({"success": result}); 
     });
 });
@@ -722,7 +722,7 @@ app.post('/incrementAreaCounter', function(req, res) {
    //log_(sql)
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
+        //if (err1) throw err1;           
         res.json({"success": result}); 
     });
 });
@@ -740,7 +740,7 @@ app.post('/decrementAreaCounter', function(req, res) {
     WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
+       // if (err1) throw err1;           
         res.json({"success": result}); 
     });
 });
@@ -777,7 +777,7 @@ app.post('/checkTicketQuick', function(req, res) {
         //log_(sql)
 
         con.query(sql, function (err1, result) {        
-            if (err1) throw err1;           
+           // if (err1) throw err1;           
             res.json({"success": result}); 
         });
     }                
@@ -811,7 +811,7 @@ app.post('/useTicket', function(req, res) {
         //log_(sql_utilizacao)
 
         con.query(sql_utilizacao, function (err2, result2) {        
-            if (err2) throw err2;          
+           // if (err2) throw err2;          
             
             ticketInfo(req, res)
         });        
