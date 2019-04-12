@@ -561,6 +561,47 @@ function useTicket(req, res, result){
     res.json({"success": callback});
 }
 
+
+function useTicketMultiple(req, res){
+
+    let idTotem = req.body.id
+    let idArea = req.body.idArea
+    let ticket = req.body.ticket
+
+    log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idArea)
+
+    let sql1 = "INSERT INTO 3a_log_utilizacao \
+            (3a_log_utilizacao.fk_id_estoque_utilizavel,\
+             3a_log_utilizacao.fk_id_ponto_acesso,\
+             3a_log_utilizacao.fk_id_area_acesso,\
+             3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
+            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
+
+        con.query(sql1, function (err1, result) {        
+
+            if (err1) throw err1;          
+            
+            let sql_utilizacao = "UPDATE 3a_estoque_utilizavel \
+                    SET 3a_estoque_utilizavel.utilizado = 1 \
+                    WHERE id_estoque_utilizavel = " + ticket + " LIMIT 1;"
+
+            log_(sql_utilizacao)
+
+            con.query(sql_utilizacao, function (err2, result2) {        
+                if (err2) throw err2;          
+
+                let sql = "UPDATE \
+                    3a_area_acesso \
+                    SET 3a_area_acesso.lotacao_area_acesso = 3a_area_acesso.lotacao_area_acesso + 1 \
+                    WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"
+
+                    con.query(sql, function (err3, result3) {                                
+                        res.json({"success": result}); 
+                    });
+                });        
+        }); 
+}
+
 function ticketInfo(req, res){
 
     let idArea = req.body.idArea
@@ -980,42 +1021,8 @@ app.post('/checkTicketContinueMultiple', function(req, res) {
     });               
 });
 
-app.post('/checkTicketContinueMultiple', function(req, res) {
-
-});
-
 app.post('/useTicketMultiple', function(req, res) {
-    
-    let idTotem = req.body.id
-    let idArea = req.body.idArea
-    let ticket = req.body.ticket
-
-    log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idArea)
-
-    let sql1 = "INSERT INTO 3a_log_utilizacao \
-            (3a_log_utilizacao.fk_id_estoque_utilizavel,\
-             3a_log_utilizacao.fk_id_ponto_acesso,\
-             3a_log_utilizacao.fk_id_area_acesso,\
-             3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
-            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
-
-        //log_(sql1)
-
-        con.query(sql1, function (err1, result) {        
-
-            if (err1) throw err1;          
-            
-            let sql_utilizacao = "UPDATE 3a_estoque_utilizavel \
-                    SET 3a_estoque_utilizavel.utilizado = 1 \
-                    WHERE id_estoque_utilizavel = " + ticket + " LIMIT 1;"
-
-            log_(sql_utilizacao)
-
-            con.query(sql_utilizacao, function (err2, result2) {        
-                if (err2) throw err2;          
-                res.json({"success": result}); 
-            });        
-        });              
+    useTicketMultiple(req, res)                 
 });
 
 app.post('/checkTicketUsed', function(req, res) {
