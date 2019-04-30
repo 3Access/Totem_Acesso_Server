@@ -23,18 +23,11 @@ function log_(str){
     console.log(msg)
 }
 
-/*var db_config = {
-    host: "10.8.0.50",
-    user: "root",
-    password: "Mudaragora00",
-    database: "zoosp"
-};*/
-
 var db_config = {
-    host: "10.0.2.146",
-    user: "root",
-    password: "Mudaragora00",
-    database: "3access"
+    host: "rds001.cacasorqzf2r.sa-east-1.rds.amazonaws.com",
+    user: "bilheteria",
+    password: "c4d3Oc0ntr4t0",
+    database: "bilheteria"
 };
 
 let con;
@@ -66,7 +59,7 @@ function handleDisconnect() {
 handleDisconnect()
 
 
-var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
+/*var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpioPageHistory      = new Gpio(5, 'in', 'both', {debounceTimeout: 10} )
 var gpioDecrementCounter = new Gpio(6, 'in', 'both', {debounceTimeout: 10} )
 var gpioSuccess          = new Gpio(3, 'out'); 
@@ -99,24 +92,26 @@ gpioDecrementCounter.watch(function(err, value) {
   }
 });
 
+*/
+
 function blinkError(){
 
-   const iv = setInterval(() => gpioError.writeSync(1), 500);
+   /*const iv = setInterval(() => gpioError.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioError.writeSync(0);        
-    }, 5000);
+    }, 5000);*/
 }
 
 function blinkSuccess(){    
-    const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
+    /*const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioSuccess.writeSync(0);        
 
-    }, 5000);
+    }, 5000);*/
 }
 
 function checkTicketExists(req, res){
