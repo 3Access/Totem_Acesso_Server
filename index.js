@@ -12,6 +12,9 @@ var ifaces = os.networkInterfaces();
 var moment = require('moment');
 var Gpio = require('onoff').Gpio
 
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(methodOverride());
@@ -622,6 +625,38 @@ function ticketInfo(req, res){
     });
 }
 
+
+
+
+function systemCommand(req, res){
+
+    console.log(req.body)
+
+    let cmd = req.body.cmd
+    let idUser = req.body.idUser
+    let ipPonto = req.body.ipPonto
+
+    let sql = "INSERT INTO comando_sistema (id_comando, id_user, ip_ponto) \
+        VALUES (" + cmd + "," + idUser + ",'" + ipPonto + "');";
+
+    log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;           
+        res.json({"success": result}); 
+    });
+}
+
+async function systemCommandLocal(req, res) {
+    console.log("Executando comando...")
+    
+    const { stdout, stderr } = await exec('xdotool key ctrl+Tab');
+    console.log('stdout:', stdout);
+    console.log('stderr:', stderr);
+
+    res.json({"success": stdout}); 
+}
+
 app.post('/checkTicketUsedTotal', function(req, res) {
 
     let idArea = req.body.idArea
@@ -1095,7 +1130,13 @@ app.post('/checkTicketOut', function(req, res) {
     });                        
 });
 
+app.post('/systemCommand', function(req, res) {
+    systemCommand(req, res)    
+});
 
+app.post('/goPDVi', function(req, res) {
+    systemCommandLocal(req, res)    
+});
 
-http.listen(8085);
+http.listen(8086);
 
