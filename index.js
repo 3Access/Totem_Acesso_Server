@@ -27,10 +27,10 @@ function log_(str){
 }
 
 var db_config = {
-    host: "rds001.cacasorqzf2r.sa-east-1.rds.amazonaws.com",
-    user: "bilheteria",
-    password: "c4d3Oc0ntr4t0",
-    database: "bilheteria"
+    host: "10.0.2.239",
+    user: "root",
+    password: "Mudaragora00",
+    database: "3access"
 };
 
 let con;
@@ -479,8 +479,6 @@ function ticketAccessOnlyone(req, res, result){
         INNER JOIN 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
         INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
         WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + " \
-        AND 3a_porta_acesso.id_porta_acesso = " + idPorta + " \
-        AND 3a_ponto_acesso.id_ponto_acesso = " + idTotem + " \
         AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
 
     //log_(sql)
