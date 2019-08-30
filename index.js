@@ -62,7 +62,7 @@ function handleDisconnect() {
 handleDisconnect()
 
 
-/*var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
+var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpioPageHistory      = new Gpio(5, 'in', 'both', {debounceTimeout: 10} )
 var gpioDecrementCounter = new Gpio(6, 'in', 'both', {debounceTimeout: 10} )
 var gpioSuccess          = new Gpio(3, 'out'); 
@@ -95,26 +95,25 @@ gpioDecrementCounter.watch(function(err, value) {
   }
 });
 
-*/
 
 function blinkError(){
 
-   /*const iv = setInterval(() => gpioError.writeSync(1), 500);
+   const iv = setInterval(() => gpioError.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioError.writeSync(0);        
-    }, 5000);*/
+    }, 5000);
 }
 
 function blinkSuccess(){    
-    /*const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
+    const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioSuccess.writeSync(0);        
 
-    }, 5000);*/
+    }, 5000);
 }
 
 function checkTicketExists(req, res){
