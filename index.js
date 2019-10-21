@@ -27,7 +27,7 @@ function log_(str){
 }
 
 var db_config = {
-    host: "10.0.2.239",
+    host: "10.9.0.8",
     user: "root",
     password: "Mudaragora00",
     database: "3access"
@@ -43,7 +43,7 @@ function handleDisconnect() {
        if (err){
         setTimeout(handleDisconnect, 2000);
        }
-
+       
        con.on('error', function(err) {
 
         if(err.code === 'PROTOCOL_CONNECTION_LOST') {
@@ -61,8 +61,7 @@ function handleDisconnect() {
 
 handleDisconnect()
 
-
-var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
+/*var gpioPageMultiple     = new Gpio(4, 'in', 'both', {debounceTimeout: 10} )
 var gpioPageHistory      = new Gpio(5, 'in', 'both', {debounceTimeout: 10} )
 var gpioDecrementCounter = new Gpio(6, 'in', 'both', {debounceTimeout: 10} )
 var gpioSuccess          = new Gpio(3, 'out'); 
@@ -93,27 +92,27 @@ gpioDecrementCounter.watch(function(err, value) {
         console.log("GPIO 6 Desligado, enviando sinal de mudar página!")
     	io.emit('gpioDecrementCounter', {gpio: '6', event: value});   
   }
-});
+});*/
 
 
 function blinkError(){
 
-   const iv = setInterval(() => gpioError.writeSync(1), 500);
+  /* const iv = setInterval(() => gpioError.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioError.writeSync(0);        
-    }, 5000);
+    }, 5000);*/
 }
 
 function blinkSuccess(){    
-    const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
+    /*const iv = setInterval(() => gpioSuccess.writeSync(1), 500);
 
     setTimeout(() => {
         clearInterval(iv);
         gpioSuccess.writeSync(0);        
 
-    }, 5000);
+    }, 5000);*/
 }
 
 function checkTicketExists(req, res){
@@ -167,6 +166,44 @@ function checkTicketIsSold(req, res){
         }             
     });
 }
+
+function checkTicketContinueMultiple(req, res){
+
+    let idTotem = req.body.id    
+    let ticket = req.body.ticket
+    let idPorta = req.body.idPorta
+    let idArea = req.body.idArea
+
+    log_('Totem: '+ idTotem + ' - Verificando ticket continuação:', ticket, idPorta, idArea)
+
+    let sql = "SELECT 3a_log_vendas.data_log_venda,\
+            3a_estoque_utilizavel.id_estoque_utilizavel,\
+            3a_estoque_utilizavel.utilizado,\
+            3a_produto.nome_produto,\
+            3a_tipo_produto.nome_tipo_produto, \
+            3a_porta_acesso.*,\
+            3a_validade.* \
+            FROM 3a_log_vendas \
+        INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_log_vendas.fk_id_produto \
+        INNER join 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
+        INNER JOIN 3a_tipo_produto ON 3a_tipo_produto.id_tipo_produto = 3a_produto.fk_id_tipo_produto \
+        INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_vendas.fk_id_estoque_utilizavel \
+        INNER JOIN 3a_validade ON 3a_validade.id_validade = 3a_log_vendas.fk_id_validade \
+        INNER join 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
+        INNER JOIN 3a_area_acesso ON 3a_area_acesso.id_area_acesso = 3a_subtipo_area_autorizada.fk_id_area_acesso \
+        INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_area_acesso = 3a_area_acesso.id_area_acesso \
+        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + "\
+        AND 3a_porta_acesso.id_porta_acesso = " + idPorta + "\
+        AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
+
+    //log_(sql)
+
+    con.query(sql, function (err1, result1) {        
+        if (err1) throw err1;              
+        res.json({"success": result1}); 
+    });
+}
+
 
 function checkTicketAccess(req, res, result){
 
@@ -556,6 +593,62 @@ function useTicket(req, res, result){
     res.json({"success": callback});
 }
 
+function useTicketUtilize(req, res){
+
+    let idTotem = req.body.id
+    let idArea = req.body.idArea
+    let ticket = req.body.ticket
+
+    log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idArea)
+
+    let sql1 = "INSERT INTO 3a_log_utilizacao \
+            (3a_log_utilizacao.fk_id_estoque_utilizavel,\
+             3a_log_utilizacao.fk_id_ponto_acesso,\
+             3a_log_utilizacao.fk_id_area_acesso,\
+             3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
+            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
+
+        //log_(sql1)
+
+    con.query(sql1, function (err1, result) {        
+
+        if (err1) throw err1;          
+        
+        let sql_utilizacao = "UPDATE 3a_estoque_utilizavel \
+                SET 3a_estoque_utilizavel.utilizado = 1 \
+                WHERE id_estoque_utilizavel = " + ticket + " LIMIT 1;"
+
+        //log_(sql_utilizacao)
+
+        con.query(sql_utilizacao, function (err2, result2) {        
+           // if (err2) throw err2;          
+            
+            ticketInfo(req, res)
+        });        
+    });
+}
+
+function checkMultipleTickets(res, res){
+
+    let idTotem = req.body.id
+    let ticketStart = req.body.ticketStart
+    let ticketEnd = req.body.ticketEnd
+
+    log_('Totem: '+ idTotem + ' - Verificando vários ticket:', ticketStart, ticketEnd)
+
+    let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel, false AS MODIFICADO,\
+            3a_log_vendas.data_log_venda \
+            FROM 3a_estoque_utilizavel \
+        LEFT JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel BETWEEN " + ticketStart + " AND "+ ticketEnd + ";"
+
+    //log_(sql)   
+
+    con.query(sql, function (err1, result) {        
+        if (err1) throw err1;   
+        res.json({"success": result});  
+    });
+}
 
 function useTicketMultiple(req, res){
 
@@ -597,6 +690,85 @@ function useTicketMultiple(req, res){
         }); 
 }
 
+function checkTicketUsed(req, res){
+
+    let idTotem = req.body.id
+    let ticket = req.body.ticket
+    let idArea = req.body.idArea
+    let idPorta = req.body.idPorta
+
+    log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
+
+    let sql = "SELECT 3a_log_utilizacao.data_log_utilizacao,\
+            3a_estoque_utilizavel.id_estoque_utilizavel,\
+            3a_porta_acesso.*,\
+            3a_tipo_produto.*,\
+            3a_ponto_acesso.nome_ponto_acesso \
+            FROM 3a_log_utilizacao \
+        INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
+        INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_utilizacao.fk_id_estoque_utilizavel \
+        INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+        INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
+        INNER JOIN 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
+        INNER JOIN 3a_tipo_produto ON 3a_tipo_produto.id_tipo_produto = 3a_produto.fk_id_tipo_produto \
+        INNER JOIN 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
+        INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
+        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + "\
+        AND 3a_porta_acesso.id_porta_acesso = " + idPorta + "\
+        AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
+
+        //log_(sql)
+
+        con.query(sql, function (err1, result) {        
+            if (err1) throw err1;           
+            res.json({"success": result, "data": req.body}); 
+        }); 
+}
+
+function checkTicketUsedSimple(req, res){
+
+    let idTotem = req.body.id
+    let ticket = req.body.ticket    
+
+    log_('Totem: '+ idTotem + ' - Verificando utilização do ticket: ', ticket)
+
+    let sql = "SELECT * FROM 3a_log_utilizacao \
+        WHERE 3a_log_utilizacao.fk_id_estoque_utilizavel = " + ticket + ";";
+
+        //log_(sql)
+
+        con.query(sql, function (err1, result) {        
+            if (err1) throw err1;           
+            res.json({"success": result, "data": req.body}); 
+        });            
+}
+
+function checkTicketOut(req, res){
+
+    let idTotem = req.body.id    
+    let ticket = req.body.ticket
+    let idArea = req.body.idArea
+
+    log_('Totem: '+ idTotem + ' - Marcando saída:', ticket)        
+
+    let sql1 = "INSERT INTO 3a_log_utilizacao \
+            (3a_log_utilizacao.fk_id_estoque_utilizavel,\
+             3a_log_utilizacao.fk_id_ponto_acesso,\
+             3a_log_utilizacao.fk_id_area_acesso,\
+             3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
+            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
+
+    log_(sql1)
+
+    con.query(sql1, function (err1, result) {        
+
+        if (err1) throw err1;          
+        res.json({"success": result}); 
+    }); 
+
+}
+
+
 function ticketInfo(req, res){
 
     let idArea = req.body.idArea
@@ -621,9 +793,6 @@ function ticketInfo(req, res){
         res.json({"success": result1}); 
     });
 }
-
-
-
 
 function systemCommand(req, res){
 
@@ -654,7 +823,7 @@ async function systemCommandLocal(req, res) {
     res.json({"success": stdout}); 
 }
 
-app.post('/checkTicketUsedTotal', function(req, res) {
+function getTicketTotal(req, res){
 
     let idArea = req.body.idArea
     let idPorta = req.body.idPorta
@@ -690,226 +859,11 @@ app.post('/checkTicketUsedTotal', function(req, res) {
           //  if (err1) throw err1;           
             res.json({"success": result}); 
         });
-    }                
-});
+    }
+}
 
-app.post('/activeGpioSuccess', function(req, res) {
-    blinkSuccess()    
-    res.json({"success": "1"});
-});
+function getTotemInfo(res, res){
 
-app.post('/activeGpioError', function(req, res) {
-    blinkError()
-    res.json({"success": "1"});    
-});
-
-app.post('/getAreas', function(req, res) {
-
-    let idTotem = req.body.id
-
-    if(idTotem == 0){
-        res.json({"success": false}); 
-    }        
-    else {
-
-        log_('Totem: '+ idTotem + ' - Verificando todas as areas:')
-            
-        let sql = "SELECT \
-        3a_area_acesso.id_area_acesso,\
-        3a_area_acesso.nome_area_acesso,\
-        3a_area_acesso.lotacao_area_acesso,\
-        3a_area_acesso.ativo \
-        FROM \
-        3a_area_acesso";
-
-        con.query(sql, function (err1, result) {        
-            if (err1) throw err1;           
-            res.json({"success": result}); 
-        });
-    }    
-});
-
-app.post('/getAreaInfo', function(req, res) {
-
-    let idTotem = req.body.id
-    let idArea_ = req.body.idArea
-
-    log_('Totem: '+ idTotem + ' - Verificando informações da area: ' + idArea_)
-            
-    let sql = "SELECT \
-    3a_area_acesso.id_area_acesso,\
-    3a_area_acesso.nome_area_acesso,\
-    3a_area_acesso.lotacao_area_acesso,\
-    3a_area_acesso.ativo \
-    FROM \
-    3a_area_acesso \
-    WHERE 3a_area_acesso.id_area_acesso = " + idArea_ + ";";
-
-    //log_(sql)
-
-    con.query(sql, function (err1, result) {        
-       // if (err1) throw err1;           
-        res.json({"success": result}); 
-    });
-});
-
-app.post('/getAreaCounter', function(req, res) {
-
-    let idTotem = req.body.id
-    let idArea = req.body.idArea    
-
-    log_('Totem: '+ idTotem + ' - Verificando contador da area:', idArea)
-            
-    let sql = "SELECT \
-    3a_area_acesso.id_area_acesso,\
-    3a_area_acesso.nome_area_acesso,\
-    3a_area_acesso.lotacao_area_acesso,\
-    3a_area_acesso.ativo \
-    FROM \
-    3a_area_acesso \
-    WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"    
-
-    con.query(sql, function (err1, result) {        
-       // if (err1) throw err1;           
-        res.json({"success": result}); 
-    });
-});
-
-app.post('/incrementAreaCounter', function(req, res) {
-
-    let idTotem = req.body.id
-    let idArea = req.body.idArea
-
-    log_('Totem: '+ idTotem + ' - Incrementando contador da area:', idArea)
-            
-    let sql = "UPDATE \
-    3a_area_acesso \
-    SET 3a_area_acesso.lotacao_area_acesso = 3a_area_acesso.lotacao_area_acesso + 1 \
-    WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"
-
-   //log_(sql)
-
-    con.query(sql, function (err1, result) {        
-        //if (err1) throw err1;           
-        res.json({"success": result}); 
-    });
-});
-
-app.post('/decrementAreaCounter', function(req, res) {
-
-    let idTotem = req.body.id
-    let idArea = req.body.idArea
-
-    log_('Totem: '+ idTotem + ' - Decrementando contador da area:', idArea)
-            
-    let sql = "UPDATE \
-    3a_area_acesso \
-    SET 3a_area_acesso.lotacao_area_acesso = 3a_area_acesso.lotacao_area_acesso - 1 \
-    WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"
-
-    con.query(sql, function (err1, result) {        
-       // if (err1) throw err1;           
-        res.json({"success": result}); 
-    });
-});
-
-app.post('/checkTicketExist', function(req, res) {
-    checkTicketExists(req, res)
-});
-
-app.post('/checkTicketQuick', function(req, res) {
-
-    let idTotem = req.body.id    
-    let ticket = req.body.ticket
-
-    log_('Totem: '+ idTotem + ' - Verificando ticket rápido:', ticket)
-
-    if(ticket.length <= 0){
-        let array = []
-        res.json({"success": array}); 
-
-    } else {
-
-        let sql = "SELECT * \
-            FROM  3a_estoque_utilizavel \
-        INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
-        INNER join 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
-        INNER join 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
-        INNER join 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
-        INNER JOIN 3a_area_acesso ON 3a_area_acesso.id_area_acesso = 3a_subtipo_area_autorizada.fk_id_area_acesso \
-        INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_area_acesso = 3a_area_acesso.id_area_acesso \
-        INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_porta_acesso.fk_id_ponto_acesso \
-        INNER JOIN 3a_validade ON 3a_validade.id_validade = 3a_log_vendas.fk_id_validade \
-        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
-
-        //log_(sql)
-
-        con.query(sql, function (err1, result) {        
-           // if (err1) throw err1;           
-            res.json({"success": result}); 
-        });
-    }                
-});
-
-app.post('/useTicket', function(req, res) {
-    
-    let idTotem = req.body.id
-    let idArea = req.body.idArea
-    let ticket = req.body.ticket
-
-    log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket, idArea)
-
-    let sql1 = "INSERT INTO 3a_log_utilizacao \
-            (3a_log_utilizacao.fk_id_estoque_utilizavel,\
-             3a_log_utilizacao.fk_id_ponto_acesso,\
-             3a_log_utilizacao.fk_id_area_acesso,\
-             3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
-            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
-
-        //log_(sql1)
-
-    con.query(sql1, function (err1, result) {        
-
-        if (err1) throw err1;          
-        
-        let sql_utilizacao = "UPDATE 3a_estoque_utilizavel \
-                SET 3a_estoque_utilizavel.utilizado = 1 \
-                WHERE id_estoque_utilizavel = " + ticket + " LIMIT 1;"
-
-        //log_(sql_utilizacao)
-
-        con.query(sql_utilizacao, function (err2, result2) {        
-           // if (err2) throw err2;          
-            
-            ticketInfo(req, res)
-        });        
-    });                        
-});
-
-app.post('/checkMultipleTickets', function(req, res) {
-
-    let idTotem = req.body.id
-    let ticketStart = req.body.ticketStart
-    let ticketEnd = req.body.ticketEnd
-
-    log_('Totem: '+ idTotem + ' - Verificando vários ticket:', ticketStart, ticketEnd)
-
-    let sql = "SELECT 3a_estoque_utilizavel.id_estoque_utilizavel, false AS MODIFICADO,\
-            3a_log_vendas.data_log_venda \
-            FROM 3a_estoque_utilizavel \
-        LEFT JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
-        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel BETWEEN " + ticketStart + " AND "+ ticketEnd + ";"
-
-    //log_(sql)   
-
-    con.query(sql, function (err1, result) {        
-        if (err1) throw err1;   
-        res.json({"success": result});  
-    });              
-});
-
-app.post('/getTotemInfo', function(req, res) {    
-    
     let sql;
 
     Object.keys(ifaces).forEach(function (ifname) {
@@ -942,11 +896,11 @@ app.post('/getTotemInfo', function(req, res) {
     con.query(sql, function (err1, result) {        
         if (err1) throw err1;   
         res.json({"success": result});               
-    }); 
-});
+    });
+}
 
-app.post('/checkTicketExistMultiple', function(req, res) {
-
+function checkTicketExistMultiple(req, res){
+    
     let idTotem = req.body.id    
     let ticket = req.body.ticket
 
@@ -960,9 +914,9 @@ app.post('/checkTicketExistMultiple', function(req, res) {
         if (err1) throw err1;           
         res.json({"success": result}); 
     });
-});
+}
 
-app.post('/checkTicketIsSold', function(req, res) {
+function checkTicketIsSold(req, res){
 
     let idTotem = req.body.id
     let ticket = req.body.ticket    
@@ -980,72 +934,247 @@ app.post('/checkTicketIsSold', function(req, res) {
         con.query(sql, function (err1, result) {        
             if (err1) throw err1;                   
             res.json({"success": result});     
-        });   
-});
+        });
+        
+}
 
-app.post('/checkTicketMultiple', function(req, res) {
+function getListaBranca(req, res, result){
+
+    let idTotem = req.body.id    
+
+    log_('Totem: '+ idTotem + ' - Verificando lista branca')
+   
+    let sql = "SELECT * \
+            FROM lista_branca \
+        INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = lista_branca.id_estoque_utilizavel \
+        INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = lista_branca.id_ponto_acesso \
+        INNER join 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
+        INNER join 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_produto.fk_id_subtipo_produto \
+        INNER join 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
+        INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_area_acesso = 3a_subtipo_area_autorizada.fk_id_area_acesso \
+        WHERE lista_branca.id_ponto_acesso = " + idTotem + ";"
+
+    log_(sql)
+
+        con.query(sql, function (err1, result) {        
+        if (err1) throw err1;           
+        res.json({"success": result}); 
+    });
+}
+
+function getAreas(req, res){
 
     let idTotem = req.body.id
-    let idArea = req.body.idArea
-    let idPorta = req.body.idPorta
-    let ticket = req.body.ticket
 
-    log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
+    if(idTotem == 0){
+        res.json({"success": false}); 
+    }        
+    else {
 
-    let sql = "SELECT * \
-                FROM 3a_estoque_utilizavel \
-            INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
-            INNER join 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
-            INNER join 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
-            INNER join 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
-            INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_area_acesso = 3a_subtipo_area_autorizada.fk_id_area_acesso \
-            WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + " \
-            AND 3a_porta_acesso.id_porta_acesso = " + idPorta + " \
-            AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";"
+        log_('Totem: '+ idTotem + ' - Verificando todas as areas:')
+            
+        let sql = "SELECT \
+        3a_area_acesso.id_area_acesso,\
+        3a_area_acesso.nome_area_acesso,\
+        3a_area_acesso.lotacao_area_acesso,\
+        3a_area_acesso.ativo \
+        FROM \
+        3a_area_acesso";
+
+        con.query(sql, function (err1, result) {        
+            if (err1) throw err1;           
+            res.json({"success": result}); 
+        });
+    }
+}
+
+function getAreaInfo(req, res){
+
+    let idTotem = req.body.id
+    let idArea_ = req.body.idArea
+
+    log_('Totem: '+ idTotem + ' - Verificando informações da area: ' + idArea_)
+            
+    let sql = "SELECT \
+    3a_area_acesso.id_area_acesso,\
+    3a_area_acesso.nome_area_acesso,\
+    3a_area_acesso.lotacao_area_acesso,\
+    3a_area_acesso.ativo \
+    FROM \
+    3a_area_acesso \
+    WHERE 3a_area_acesso.id_area_acesso = " + idArea_ + ";";
 
     //log_(sql)
 
     con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
+       // if (err1) throw err1;           
         res.json({"success": result}); 
     });
-});
+}
 
-app.post('/checkTicketContinueMultiple', function(req, res) {
+function getAreaCounter(req, res){
+
+    let idTotem = req.body.id
+    let idArea = req.body.idArea    
+
+    log_('Totem: '+ idTotem + ' - Verificando contador da area:', idArea)
+            
+    let sql = "SELECT \
+    3a_area_acesso.id_area_acesso,\
+    3a_area_acesso.nome_area_acesso,\
+    3a_area_acesso.lotacao_area_acesso,\
+    3a_area_acesso.ativo \
+    FROM \
+    3a_area_acesso \
+    WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"    
+
+    con.query(sql, function (err1, result) {        
+       // if (err1) throw err1;           
+        res.json({"success": result}); 
+    });
+}
+
+function incrementAreaCounter(req, res){
+
+    let idTotem = req.body.id
+    let idArea = req.body.idArea
+
+    log_('Totem: '+ idTotem + ' - Incrementando contador da area:', idArea)
+            
+    let sql = "UPDATE \
+    3a_area_acesso \
+    SET 3a_area_acesso.lotacao_area_acesso = 3a_area_acesso.lotacao_area_acesso + 1 \
+    WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"
+
+   //log_(sql)
+
+    con.query(sql, function (err1, result) {        
+        //if (err1) throw err1;           
+        res.json({"success": result}); 
+    });
+}
+
+function decrementAreaCounter(req, res){
+
+    let idTotem = req.body.id
+    let idArea = req.body.idArea
+
+    log_('Totem: '+ idTotem + ' - Decrementando contador da area:', idArea)
+            
+    let sql = "UPDATE \
+    3a_area_acesso \
+    SET 3a_area_acesso.lotacao_area_acesso = 3a_area_acesso.lotacao_area_acesso - 1 \
+    WHERE 3a_area_acesso.id_area_acesso = " + idArea + ";"
+
+    con.query(sql, function (err1, result) {        
+       // if (err1) throw err1;           
+        res.json({"success": result}); 
+    });
+}
+
+function getTicketQuick(req, res){
 
     let idTotem = req.body.id    
     let ticket = req.body.ticket
-    let idPorta = req.body.idPorta
-    let idArea = req.body.idArea
 
-    log_('Totem: '+ idTotem + ' - Verificando ticket continuação:', ticket, idPorta, idArea)
+    log_('Totem: '+ idTotem + ' - Verificando ticket rápido:', ticket)
 
-    let sql = "SELECT 3a_log_vendas.data_log_venda,\
-            3a_estoque_utilizavel.id_estoque_utilizavel,\
-            3a_estoque_utilizavel.utilizado,\
-            3a_produto.nome_produto,\
-            3a_tipo_produto.nome_tipo_produto, \
-            3a_porta_acesso.*,\
-            3a_validade.* \
-            FROM 3a_log_vendas \
-        INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_log_vendas.fk_id_produto \
+    if(ticket.length <= 0){
+        let array = []
+        res.json({"success": array}); 
+
+    } else {
+
+        let sql = "SELECT * \
+            FROM  3a_estoque_utilizavel \
+        INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+        INNER join 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
         INNER join 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
-        INNER JOIN 3a_tipo_produto ON 3a_tipo_produto.id_tipo_produto = 3a_produto.fk_id_tipo_produto \
-        INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_vendas.fk_id_estoque_utilizavel \
-        INNER JOIN 3a_validade ON 3a_validade.id_validade = 3a_log_vendas.fk_id_validade \
         INNER join 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
         INNER JOIN 3a_area_acesso ON 3a_area_acesso.id_area_acesso = 3a_subtipo_area_autorizada.fk_id_area_acesso \
         INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_area_acesso = 3a_area_acesso.id_area_acesso \
-        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + "\
-        AND 3a_porta_acesso.id_porta_acesso = " + idPorta + "\
-        AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
+        INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_porta_acesso.fk_id_ponto_acesso \
+        INNER JOIN 3a_validade ON 3a_validade.id_validade = 3a_log_vendas.fk_id_validade \
+        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + ";"
 
-    //log_(sql)
+        //log_(sql)
 
-    con.query(sql, function (err1, result1) {        
-        if (err1) throw err1;              
-        res.json({"success": result1}); 
-    });               
+        con.query(sql, function (err1, result) {        
+           // if (err1) throw err1;           
+            res.json({"success": result}); 
+        });
+    }
+
+}
+
+app.post('/checkTicketUsedTotal', function(req, res) {
+    getTicketTotal(req, res)                    
+});
+
+app.post('/activeGpioSuccess', function(req, res) {
+    blinkSuccess()    
+    res.json({"success": "1"});
+});
+
+app.post('/activeGpioError', function(req, res) {
+    blinkError()
+    res.json({"success": "1"});    
+});
+
+app.post('/getAreas', function(req, res) {
+    getAreas(req, res)        
+});
+
+app.post('/getAreaInfo', function(req, res) {
+    getAreaInfo(req, res)
+});
+
+app.post('/getAreaCounter', function(req, res) {
+    getAreaCounter(req, res)    
+});
+
+app.post('/incrementAreaCounter', function(req, res) {
+    incrementAreaCounter(req, res)    
+});
+
+app.post('/decrementAreaCounter', function(req, res) {
+    decrementAreaCounter(req, res)    
+});
+
+app.post('/checkTicketExist', function(req, res) {
+    checkTicketExists(req, res)
+});
+
+app.post('/checkTicketQuick', function(req, res) {
+    getTicketQuick(req, res)                        
+});
+
+app.post('/useTicket', function(req, res) {
+    useTicketUtilize(req, res)       
+});
+
+app.post('/checkMultipleTickets', function(req, res) {
+    checkMultipleTickets(req, res)                  
+});
+
+app.post('/getTotemInfo', function(req, res) {    
+    getTotemInfo(res, res)     
+});
+
+app.post('/checkTicketExistMultiple', function(req, res) {
+    checkTicketExistMultiple(res, res)
+});
+
+app.post('/checkTicketIsSold', function(req, res) {
+    checkTicketIsSold(req, res)
+});
+
+app.post('/checkTicketMultiple', function(req, res) {
+    checkTicketMultiple(req, res)
+});
+
+app.post('/checkTicketContinueMultiple', function(req, res) {
+    checkTicketContinueMultiple(req, res)          
 });
 
 app.post('/useTicketMultiple', function(req, res) {
@@ -1053,78 +1182,15 @@ app.post('/useTicketMultiple', function(req, res) {
 });
 
 app.post('/checkTicketUsed', function(req, res) {
-    let idTotem = req.body.id
-    let ticket = req.body.ticket
-    let idArea = req.body.idArea
-    let idPorta = req.body.idPorta
-
-    log_('Totem: '+ idTotem + ' - Verificando ticket:', ticket)
-
-    let sql = "SELECT 3a_log_utilizacao.data_log_utilizacao,\
-            3a_estoque_utilizavel.id_estoque_utilizavel,\
-            3a_porta_acesso.*,\
-            3a_tipo_produto.*,\
-            3a_ponto_acesso.nome_ponto_acesso \
-            FROM 3a_log_utilizacao \
-        INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = 3a_log_utilizacao.fk_id_ponto_acesso \
-        INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = 3a_log_utilizacao.fk_id_estoque_utilizavel \
-        INNER JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
-        INNER JOIN 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
-        INNER JOIN 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_log_vendas.fk_id_subtipo_produto \
-        INNER JOIN 3a_tipo_produto ON 3a_tipo_produto.id_tipo_produto = 3a_produto.fk_id_tipo_produto \
-        INNER JOIN 3a_subtipo_area_autorizada ON 3a_subtipo_area_autorizada.fk_id_subtipo = 3a_subtipo_produto.id_subtipo_produto \
-        INNER JOIN 3a_porta_acesso ON 3a_porta_acesso.fk_id_ponto_acesso = 3a_ponto_acesso.id_ponto_acesso \
-        WHERE 3a_estoque_utilizavel.id_estoque_utilizavel = " + ticket + "\
-        AND 3a_porta_acesso.id_porta_acesso = " + idPorta + "\
-        AND 3a_subtipo_area_autorizada.fk_id_area_acesso = " + idArea + ";";
-
-        //log_(sql)
-
-        con.query(sql, function (err1, result) {        
-            if (err1) throw err1;           
-            res.json({"success": result, "data": req.body}); 
-        });            
+    checkTicketUsed(req, res)      
 });
 
 app.post('/checkTicketUsedSimple', function(req, res) {
-    let idTotem = req.body.id
-    let ticket = req.body.ticket    
-
-    log_('Totem: '+ idTotem + ' - Verificando utilização do ticket: ', ticket)
-
-    let sql = "SELECT * FROM 3a_log_utilizacao \
-        WHERE 3a_log_utilizacao.fk_id_estoque_utilizavel = " + ticket + ";";
-
-        //log_(sql)
-
-        con.query(sql, function (err1, result) {        
-            if (err1) throw err1;           
-            res.json({"success": result, "data": req.body}); 
-        });            
+    checkTicketUsedSimple(req, res)
 });
 
 app.post('/checkTicketOut', function(req, res) {
-
-    let idTotem = req.body.id    
-    let ticket = req.body.ticket
-    let idArea = req.body.idArea
-
-    log_('Totem: '+ idTotem + ' - Marcando saída:', ticket)        
-
-    let sql1 = "INSERT INTO 3a_log_utilizacao \
-            (3a_log_utilizacao.fk_id_estoque_utilizavel,\
-             3a_log_utilizacao.fk_id_ponto_acesso,\
-             3a_log_utilizacao.fk_id_area_acesso,\
-             3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
-            VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
-
-    log_(sql1)
-
-    con.query(sql1, function (err1, result) {        
-
-        if (err1) throw err1;          
-        res.json({"success": result}); 
-    });                        
+    checkTicketOut(req, res)                  
 });
 
 app.post('/systemCommand', function(req, res) {
@@ -1133,6 +1199,10 @@ app.post('/systemCommand', function(req, res) {
 
 app.post('/goPDVi', function(req, res) {
     systemCommandLocal(req, res)    
+});
+
+app.post('/getListaBranca', function(req, res) {
+    getListaBranca(req, res)    
 });
 
 http.listen(8086);
