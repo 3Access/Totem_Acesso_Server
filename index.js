@@ -30,7 +30,8 @@ var db_config = {
     host: "10.9.0.8",
     user: "root",
     password: "Mudaragora00",
-    database: "3access"
+    database: "3access",
+    timezone: 'utc'
 };
 
 let con;
@@ -453,7 +454,7 @@ function ticketAccessTimeDoor(req, res, result){
     let until =  moment(result[0].data_log_venda).add(result[0].horas_porta_acesso, 'hours').format();
     let now = moment().format()        
     
-    let isAfter = moment(until).isAfter(now);
+    let isAfter = moment(now).isAfter(until);
 
     if(isAfter){
       
@@ -622,6 +623,8 @@ function useTicket(req, res, result){
 
 function useTicketUtilize(req, res){
 
+    console.log(req.body)
+    
     let idTotem = req.body.id
     let idArea = req.body.idArea
     let ticket = req.body.ticket
@@ -635,7 +638,7 @@ function useTicketUtilize(req, res){
              3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
             VALUES (" + ticket + "," + idTotem + "," + idArea + ", 1, NOW());";        
 
-        //log_(sql1)
+        log_(sql1)
 
     con.query(sql1, function (err1, result) {        
 
@@ -654,6 +657,56 @@ function useTicketUtilize(req, res){
         });        
     });
 }
+
+function useTicketMemory(req, res){
+
+    console.log(req.body)
+    
+    let idTotem = req.body.id
+    let idArea = req.body.idArea
+    let ticket = req.body.ticket
+
+    let utilizacoes = req.body.ticket.utilizacoes
+    let promises = []
+    
+    log_('Totem: '+ idTotem + ' - Marcando ticket como utilizado:', ticket.id_estoque_utilizavel, idArea)
+
+    let sql_utilizacao = "UPDATE 3a_estoque_utilizavel \
+                SET 3a_estoque_utilizavel.utilizado = 1 \
+                WHERE id_estoque_utilizavel = " + ticket.id_estoque_utilizavel + " LIMIT 1;"
+
+    con.query(sql_utilizacao, function (err2, result2) {        
+        // if (err2) throw err2;          
+    });
+
+    utilizacoes.forEach(element => {
+
+        let pro = new Promise(resolve => {
+            
+            let sql1 = "INSERT INTO 3a_log_utilizacao \
+                        (3a_log_utilizacao.fk_id_estoque_utilizavel,\
+                        3a_log_utilizacao.fk_id_ponto_acesso,\
+                        3a_log_utilizacao.fk_id_area_acesso,\
+                        3a_log_utilizacao.fk_id_usuario,data_log_utilizacao) \
+                    VALUES (" + ticket.id_estoque_utilizavel + "," + idTotem + "," + idArea + ", 1, '" + element + "' );";        
+
+                    log_(sql1)
+
+                    con.query(sql1, function (err1, result) {        
+                        if (err1) throw err1;                                  
+                        resolve()
+                    });
+        })
+
+        promises.push(pro)
+    })
+
+    Promise.all(promises).then(() => {
+
+        res.json({"success": true, "data": req.body}); 
+    })
+}
+
 
 function checkMultipleTickets(req, res){
 
@@ -976,6 +1029,8 @@ function getListaBranca(req, res, result){
     let sql = "SELECT * \
             FROM lista_branca \
         INNER JOIN 3a_estoque_utilizavel ON 3a_estoque_utilizavel.id_estoque_utilizavel = lista_branca.id_estoque_utilizavel \
+        LEFT JOIN 3a_log_vendas ON 3a_log_vendas.fk_id_estoque_utilizavel = 3a_estoque_utilizavel.id_estoque_utilizavel \
+        LEFT JOIN 3a_validade ON 3a_validade.id_validade = 3a_log_vendas.fk_id_validade \
         INNER JOIN 3a_ponto_acesso ON 3a_ponto_acesso.id_ponto_acesso = lista_branca.id_ponto_acesso \
         INNER join 3a_produto ON 3a_produto.id_produto = 3a_estoque_utilizavel.fk_id_produto \
         INNER join 3a_subtipo_produto ON 3a_subtipo_produto.id_subtipo_produto = 3a_produto.fk_id_subtipo_produto \
@@ -986,7 +1041,8 @@ function getListaBranca(req, res, result){
     log_(sql)
 
         con.query(sql, function (err1, result) {        
-        if (err1) throw err1;           
+        if (err1) throw err1; 
+                  
         res.json({"success": result}); 
     });
 }
@@ -1180,6 +1236,10 @@ app.post('/checkTicketQuick', function(req, res) {
 
 app.post('/useTicket', function(req, res) {
     useTicketUtilize(req, res)       
+});
+
+app.post('/useTicketMemory', function(req, res) {
+    useTicketMemory(req, res)       
 });
 
 app.post('/checkMultipleTickets', function(req, res) {
