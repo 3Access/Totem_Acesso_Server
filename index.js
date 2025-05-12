@@ -27,10 +27,10 @@ function log_(str){
 }
 
 var db_config = {
-    host: "10.9.0.8",
+    host: "18.207.146.28",
     user: "root",
     password: "Mudaragora00",
-    database: "3access",
+    database: "3access_test",
     timezone: 'utc'
 };
 
@@ -38,6 +38,7 @@ let con;
 
 function handleDisconnect() {
 
+    
     con = mysql.createConnection(db_config);
    
     con.connect(function(err) {
@@ -1294,5 +1295,5 @@ app.post('/getListaBranca', function(req, res) {
     getListaBranca(req, res)    
 });
 
-http.listen(8086);
+http.listen(8085);
 
