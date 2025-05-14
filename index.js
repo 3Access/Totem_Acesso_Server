@@ -1103,7 +1103,7 @@ function getAreaCounter(req, res){
     let idTotem = req.body.id
     let idArea = req.body.idArea    
 
-    log_('Totem: '+ idTotem + ' - Verificando contador da area:', idArea)
+   // log_('Totem: '+ idTotem + ' - Verificando contador da area:', idArea)
             
     let sql = "SELECT \
     3a_area_acesso.id_area_acesso,\
